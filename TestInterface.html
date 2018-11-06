@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Home</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+
+    <br>
+
+    <!-- Registration -->
+    <form id="registration" method="POST" action="http://localhost:1212/register">
+        <label>Username</label><input name="username" type="text" value="" />
+        <label>Password</label><input name="password" type="password" value="" />
+        <input type="submit" value="Register" />
+    </form>
+
+    <br>
+
+    <!-- Login -->
+    <form id="login" method="POST" action="http://localhost:1212/login">
+        <label>Username</label><input name="username" type="text" value="" />
+        <label>Password</label><input name="password" type="password" value="" />
+        <input type="submit" value="Login" />
+    </form>
+
+    <br>
+
+    <!-- Token -->
+    <div id="token">Your token: </div>
+
+    <br>
+
+    <!-- Find hubs -->
+    <label>Find Hubs:</label> <br>
+    <input id="find-hubs" type="text" value="" /> <br>
+    <!-- <button onclick="connectToSearchWebsocket()">Connect</button> -->
+
+    <br>
+
+    <!-- Results -->
+    <label>Hubs:</label> <br>
+    <div id="matches"></div>
+
+    <br>
+
+    <!-- Join a hub -->
+    <div>
+        <input id="hubid" type="text" placeholder="Hub ID">
+        <button onclick="beginWebsocket()">Join</button>
+    </div>
+
+    <br>
+
+    <textarea id="messagebox" cols="30" rows="10"></textarea>
+
+
+    <script type="text/javascript">
+
+        var token;
+        var email;
+        var uuid;
+
+
+
+        var searchWS = null;
+
+
+        function connectToSearchWebsocket() {
+
+            // begin websocket connection
+            
+
+
+            searchWS = new WebSocket("ws://localhost:1212/ws/find-hubs");
+            waitForSocketConnection(searchWS, function() {
+                console.log("Connected to search websocket.");
+                searchWS.onmessage = function (evt) {
+
+                    var results = evt.data.split('\n');
+
+                    if (results.length > 0) {
+
+                        results = JSON.parse(results[0]);
+
+                        console.log(results);
+                        $("#matches").empty();
+
+                        for (var r in results) {
+                            var match = document.createElement('div');
+                            match.className = "match";
+                            match.innerHTML = results[r].ID;
+                            $("#matches").append(match);
+                        }
+
+                    } else {
+                        console.log("error parsing message!");
+                    }
+                };
+            });
+
+        }
+
+
+        $("#find-hubs").keydown(function(e) {
+
+            if (searchWS == null || searchWS.readyState != searchWS.OPEN) {
+                console.log('you are not connected.');
+                connectToSearchWebsocket();
+            }
+
+            waitForSocketConnection(searchWS, function() {
+                searchWS.send($("#find-hubs").val());
+            });
+
+        })
+
+
+        $("#registration").submit(function(e) {
+            var form = $(this);
+            var url = form.attr('action');
+            e.stopPropagation();
+            e.preventDefault();
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: form.serialize(),
+                success: function(data, textStatus, xhr) {
+                    if (xhr.status != 200) {
+                        console.log(data.responseText);
+                    } else {
+                        
+                        js = JSON.parse(data);
+                        console.log(js);
+                    }
+                },
+                error: function(data, textStatus, xhr) {
+                    console.log(data.responseText);
+                }
+            });
+            return false;
+        });
+
+        $("#login").submit(function(e) {
+            var form = $(this);
+            var url = form.attr('action');
+            e.stopPropagation();
+            e.preventDefault();
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: form.serialize(),
+                success: function(data, textStatus, xhr) {
+                    if (xhr.status != 200) {
+                        console.log(data.responseText);
+                    } else {
+                        console.log(data);
+                        email = data.email;
+                        token = data.token;
+                        uuid = data.uuid;
+                        $("#token").append(token);
+                    }
+                },
+                error: function(data, textStatus, xhr) {
+                    console.log(data.responseText);
+                }
+            });
+            return false;
+        });
+
+
+        // web socket handlers
+
+        var ws = null;
+
+        function beginWebsocket() {
+
+            if (ws != null) ws.close();
+
+            var hubID = $('#hubid').val();
+
+            ws = new WebSocket("ws://localhost:1212/ws?token="+token+"&hub="+hubID);
+            waitForSocketConnection(ws, function() {
+                console.log("Connected.")
+                ws.onmessage = function (evt) {
+                    var messages = evt.data.split('\n');
+                    if (messages.length > 0) {
+                        var msg = JSON.parse(messages[0]);
+                        console.log(msg);
+                        // console.log(msg.email + ": " + msg.Message);
+                    } else {
+                        console.log("error parsing message!");
+                    }
+                };
+            });
+        }
+
+        $("#messagebox").keypress(
+        function(e){
+            if (e.keyCode == 13) {
+                e.preventDefault();
+                sendMessage($(this).val());
+                $(this).val("");
+            }
+        });
+
+        function sendMessage(msg){
+
+            if (ws == null) {
+                console.log('you are not connected.');
+                return;
+            }
+
+            waitForSocketConnection(ws, function() {
+                ws.send(JSON.stringify({
+                    sender: uuid,
+                    message: msg
+                }));
+            });
+
+        }
+
+        // Make the function wait until the connection is made...
+        function waitForSocketConnection(socket, callback){
+            setTimeout(function () {
+                    if (socket.readyState === 1) {
+                        if(callback != null) {
+                            callback();
+                        }
+                        return;
+                    } else {
+                        console.log("Waiting to connect.");
+                        waitForSocketConnection(socket, callback);
+                    }
+                },
+            5); // wait 5 miliseconds
+        }
+
+    </script>
+    
+    
+</body>
+</html>

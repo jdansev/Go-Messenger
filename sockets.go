@@ -95,7 +95,7 @@ func ConnectionHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// FuzzyFindHubs : returns a list of matching hubs
+// FuzzyFindHubs : returns a list of hubs with matching ids
 func FuzzyFindHubs(w http.ResponseWriter, r *http.Request) {
 
 	c, err := upgrader.Upgrade(w, r, nil)
@@ -113,10 +113,12 @@ func FuzzyFindHubs(w http.ResponseWriter, r *http.Request) {
 		}
 
 		matches := []*Hub{}
-
-		for _, h := range hubs {
-			if fuzzy.Match(string(query), h.ID) {
-				matches = append(matches, h)
+		q := string(query)
+		if q != "" {
+			for _, h := range hubs {
+				if fuzzy.Match(q, h.ID) {
+					matches = append(matches, h)
+				}
 			}
 		}
 		js, _ := json.Marshal(matches)
