@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/lithammer/fuzzysearch/fuzzy"
 )
 
@@ -99,17 +98,13 @@ func ConnectionHandler(w http.ResponseWriter, r *http.Request) {
 // FuzzyFindHubs : returns a list of matching hubs
 func FuzzyFindHubs(w http.ResponseWriter, r *http.Request) {
 
-	params := mux.Vars(r)
-	hid := params["hub_id"]
-
-	fmt.Println(hid)
-
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Print("upgrade:", err)
 		return
 	}
 	defer c.Close()
+
 	for {
 		mt, query, err := c.ReadMessage()
 		if err != nil {
