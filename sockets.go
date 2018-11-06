@@ -131,3 +131,44 @@ func FuzzyFindHubs(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+
+
+
+
+// FuzzyFindUsers : returns a list of users with matching ids
+func FuzzyFindUsers(w http.ResponseWriter, r *http.Request) {
+
+	c, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}
+	defer c.Close()
+
+	for {
+		mt, query, err := c.ReadMessage()
+		if err != nil {
+			log.Println("read:", err)
+			break
+		}
+
+		matches := []*User{}
+		q := string(query)
+		if q != "" {
+			for _, u := range users {
+				if fuzzy.Match(q, u.Username) {
+					matches = append(matches, u)
+				}
+			}
+		}
+		js, _ := json.Marshal(matches)
+
+		err = c.WriteMessage(mt, js)
+		if err != nil {
+			log.Println("write:", err)
+			break
+		}
+	}
+
+}
