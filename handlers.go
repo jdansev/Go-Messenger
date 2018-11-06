@@ -123,3 +123,6 @@ func GetUserFriends(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewEncoder(w).Encode(user.Friends)
 }
+
+
+

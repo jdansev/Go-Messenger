@@ -1,11 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 
-	"github.com/gorilla/websocket"
+	"github.com/gorilla/mux"
+	"github.com/lithammer/fuzzysearch/fuzzy"
 )
 
 // MessageHandler : relays messages to users in a hub
@@ -69,7 +71,7 @@ func ConnectionHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("hub exists, adding new user to it")
 	}
 
-	ws, err := websocket.Upgrade(w, r, w.Header(), 1024, 1024)
+	ws, err := upgrader.Upgrade(w, r, nil)
 
 	if err != nil {
 		log.Fatal(err)
@@ -90,6 +92,45 @@ func ConnectionHandler(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		h.broadcast <- msg
+	}
+
+}
+
+// FuzzyFindHubs : returns a list of matching hubs
+func FuzzyFindHubs(w http.ResponseWriter, r *http.Request) {
+
+	params := mux.Vars(r)
+	hid := params["hub_id"]
+
+	fmt.Println(hid)
+
+	c, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}
+	defer c.Close()
+	for {
+		mt, query, err := c.ReadMessage()
+		if err != nil {
+			log.Println("read:", err)
+			break
+		}
+
+		matches := []*Hub{}
+
+		for _, h := range hubs {
+			if fuzzy.Match(string(query), h.ID) {
+				matches = append(matches, h)
+			}
+		}
+		js, _ := json.Marshal(matches)
+
+		err = c.WriteMessage(mt, js)
+		if err != nil {
+			log.Println("write:", err)
+			break
+		}
 	}
 
 }

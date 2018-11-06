@@ -43,5 +43,4 @@ type Member struct {
 type Message struct {
 	Sender  string
 	Message string
-	// Sender  *User
 }

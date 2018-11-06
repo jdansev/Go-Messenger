@@ -44,10 +44,6 @@ func (h *Hub) addTestUsersToHub() {
 }
 
 func (h *Hub) addTestMessagesToHub() {
-	// h.Messages = append(h.Messages, &Message{p1, "hey there"})
-	// h.Messages = append(h.Messages, &Message{p2, "whats up"})
-	// h.Messages = append(h.Messages, &Message{p3, "how's it going"})
-
 	h.Messages = append(h.Messages, &Message{"1","hey there"})
 	h.Messages = append(h.Messages, &Message{"2","whats up"})
 	h.Messages = append(h.Messages, &Message{"3","how's it going"})

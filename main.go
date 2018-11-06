@@ -39,6 +39,7 @@ func main() {
 
 	// sockets
 	router.HandleFunc("/ws", ConnectionHandler)
+	router.HandleFunc("/find-hubs/{hub_id}", FuzzyFindHubs)
 
 	log.Fatal(http.ListenAndServe(":1212", router))
 }
