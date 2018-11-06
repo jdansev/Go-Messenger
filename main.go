@@ -22,7 +22,7 @@ func main() {
 
 	addTestHubs()
 
-	// queries
+	// public queries
 	router.HandleFunc("/hubs", GetHubs).Methods("GET")
 	router.HandleFunc("/hubs/{hub_id}", GetHub).Methods("GET")
 
@@ -33,14 +33,19 @@ func main() {
 	router.HandleFunc("/members/{hub_id}", GetMembers).Methods("GET")
 	router.HandleFunc("/messages/{hub_id}", GetMessages).Methods("GET")
 
+	// actions (secure APIs) must include valid token
+	router.HandleFunc("/create-hub", CreateHub).Methods("POST")
+
 	// authentication
 	router.HandleFunc("/register", Register).Methods("POST")
 	router.HandleFunc("/login", Login).Methods("POST")
 
-	// sockets
-	router.HandleFunc("/ws", ConnectionHandler)
+	// query sockets
 	router.HandleFunc("/ws/find-hubs", FuzzyFindHubs)
 	router.HandleFunc("/ws/find-users", FuzzyFindUsers)
+
+	// chat socket
+	router.HandleFunc("/ws", ConnectionHandler)
 
 	log.Fatal(http.ListenAndServe(":1212", router))
 }

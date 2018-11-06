@@ -49,7 +49,7 @@ func ConnectionHandler(w http.ResponseWriter, r *http.Request) {
 
 	ok = validateToken(tok)
 	if !ok {
-		http.Error(w, "400 - token invalid!", http.StatusBadRequest)
+		http.Error(w, "403 - you are not authorized!", http.StatusForbidden)
 		return
 	}
 
@@ -63,7 +63,6 @@ func ConnectionHandler(w http.ResponseWriter, r *http.Request) {
 	h := getHub(hid)
 	if h == nil {
 		h = u.createHub(hid)
-		go h.MessageHandler()
 		fmt.Println("created new hub")
 	} else {
 		h.joinUser(u)

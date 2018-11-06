@@ -7,6 +7,13 @@
     <title>Home</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
+    <style>
+        .query {
+            border: 1px solid #000;
+            width: 400px;
+            padding: 20px;
+        }
+    </style>
 </head>
 <body>
 
@@ -34,17 +41,7 @@
     <div id="token">Your token: </div>
 
     <br>
-
-    <!-- Find hubs -->
-    <label>Find Hubs:</label> <br>
-    <input id="find-hubs" type="text" value="" /> <br>
-    <!-- <button onclick="connectHubSearchWebsocket()">Connect</button> -->
-
-    <br>
-
-    <!-- Results -->
-    <label>Hubs:</label> <br>
-    <div id="hub-matches"></div>
+    
 
     <br>
 
@@ -61,15 +58,38 @@
     <br>
     <br>
 
-    <!-- Find Users -->
-    <label>Find Users:</label> <br>
-    <input id="find-users" type="text" value="" placeholder="Username"/> <br>
+    <!-- Create Hubs -->
+    <div class="query">
+        <form id="create-hub" method="POST" action="http://localhost:1212/create-hub">
+            <label>Create a new Hub:</label> <br>
+            <input id="create-hub" name="hub_id" type="text" value="" placeholder="Hub Name"/> <button type="submit">Create</button>
+        </form>
+    </div>
 
     <br>
 
-    <!-- User Search Results -->
-    <label>Users:</label> <br>
-    <div id="user-matches"></div>
+    <!-- Find hubs -->
+    <div class="query">
+        <!-- Input -->
+        <label>Find Hubs:</label> <br>
+        <input id="find-hubs" type="text" value="" /> <br>
+        <!-- Results -->
+        <label>Results:</label> <br>
+        <div id="hub-matches"></div>
+    </div>
+    
+
+    <br>
+
+    <!-- Find Users -->
+    <div class="query">
+        <!-- Input -->
+        <label>Find Users:</label> <br>
+        <input id="find-users" type="text" value="" placeholder="Username"/> <br>
+        <!-- Results -->
+        <label>Results:</label> <br>
+        <div id="user-matches"></div>
+    </div>
 
     <br>
 
@@ -175,6 +195,31 @@
             });
 
         })
+
+        $("#create-hub").submit(function(e) {
+            var form = $(this);
+            var url = form.attr('action') + "?token=" + token;
+            e.stopPropagation();
+            e.preventDefault();
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: form.serialize(),
+                success: function(data, textStatus, xhr) {
+                    if (xhr.status != 200) {
+                        console.log(data.responseText);
+                    } else {
+                        console.log("hub successfully created");
+                        js = JSON.parse(data);
+                        console.log(js);
+                    }
+                },
+                error: function(data, textStatus, xhr) {
+                    console.log(data.responseText);
+                }
+            });
+            return false;
+        });
 
 
         $("#registration").submit(function(e) {

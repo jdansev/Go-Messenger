@@ -84,13 +84,15 @@ func removeHub(h *Hub) bool {
 }
 
 func createHub(id string) *Hub {
-	return &Hub{
+	h := &Hub{
 		ID:        id,
 		broadcast: make(chan Message),
 		clients:   make(map[*websocket.Conn]bool),
 		Members:   []*Member{},
 		Messages:  []*Message{},
 	}
+	go h.MessageHandler()
+	return h
 }
 
 func (j *JoinedHubs) getJoinedHub() *Hub {

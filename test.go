@@ -17,7 +17,6 @@ func addTestHubs() {
 	h.addTestMessagesToHub()
 
 	addHub(h)
-	go h.MessageHandler()
 
 	// user creation of hubs
 	h2 := p1.createHub("p1s-hub")
