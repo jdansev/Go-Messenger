@@ -204,7 +204,7 @@ func (u *User) addFriend(f *User) {
 	if u.isFriendsWith(f) || u == f {
 		return
 	}
-	u.Friends = append(u.Friends, &Friend{f.ID})
+	u.Friends = append(u.Friends, &Friend{f.ID, f.Username})
 }
 
 func (u *User) removeFriend(f *Friend) bool {

@@ -94,6 +94,8 @@ func ConnectionHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// TODO: combine searching hubs/users into one and distinguish them by a socket layer
+
 // FuzzyFindHubs : returns a list of hubs with matching ids
 func FuzzyFindHubs(w http.ResponseWriter, r *http.Request) {
 
@@ -135,10 +137,6 @@ func FuzzyFindHubs(w http.ResponseWriter, r *http.Request) {
 
 }
 
-
-
-
-
 // FuzzyFindUsers : returns a list of users with matching ids
 func FuzzyFindUsers(w http.ResponseWriter, r *http.Request) {
 
@@ -158,7 +156,10 @@ func FuzzyFindUsers(w http.ResponseWriter, r *http.Request) {
 
 		matches := []*User{}
 		q := string(query)
-		if q != "" {
+
+		if q == "*" {
+			matches = users
+		} else if q != "" {
 			for _, u := range users {
 				if fuzzy.Match(q, u.Username) {
 					matches = append(matches, u)

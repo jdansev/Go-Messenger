@@ -85,6 +85,33 @@ func GetMembers(w http.ResponseWriter, r *http.Request) {
 
 
 
+// GetMyFriends : returns requesting user's friends
+func GetMyFriends(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	// 1. Validate token
+	tokenParam, ok := r.URL.Query()["token"]
+	if !ok || len(tokenParam) < 1 || tokenParam[0] == "undefined" {
+		http.Error(w, "400 - token invalid!", http.StatusBadRequest)
+		return
+	}
+	tok := tokenParam[0]
+	ok = validateToken(tok)
+	if !ok {
+		http.Error(w, "403 - you are not authorized to fetch this user's friends!", http.StatusForbidden)
+		return
+	}
+	// 2. Get the user's profile
+	u := getUserFromToken(tok)
+	if u == nil {
+		http.Error(w, "500 - error fetching user!", http.StatusInternalServerError)
+		return
+	}
+	// 3. Return user hubs
+	json.NewEncoder(w).Encode(u.Friends)
+}
+
+
+
 
 /* HUB APIs */
 

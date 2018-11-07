@@ -18,7 +18,8 @@ type JoinedHubs struct {
 
 // Friend : ID in friend list
 type Friend struct {
-	ID string
+	ID       string
+	Username string
 }
 
 // TODO: public and private hubs

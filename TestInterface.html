@@ -13,7 +13,8 @@
             width: 300px;
             margin: 10px;
             padding: 10px;
-            display: inline-block
+            display: inline-block;
+            word-wrap: break-word;
         }
     </style>
 </head>
@@ -49,19 +50,31 @@
     <br>
     <br>
 
-    <!-- Your hubs -->
+    <!-- Your friends -->
     <div class="query">
-        <label>Your Hubs:</label> <br>
-        <div id="your-hubs"></div>
+        <label>Your Friends:</label> <br>
+        <div id="your-friends"></div>
     </div>
 
     <br>
 
-    <!-- Join a hub -->
+    <!-- Find Users -->
     <div class="query">
-        <label>Join a Hub:</label> <br>
-        <input id="hubid" type="text" placeholder="Hub ID"/>
-        <button onclick="beginWebsocket()">Join</button>
+        <!-- Input -->
+        <label>Find Users:</label> <br>
+        <input id="find-users" type="text" value="" placeholder="Username"/> <br>
+        <!-- Results -->
+        <label>Results:</label> <br>
+        <div id="user-matches"></div>
+    </div>
+
+    <br>
+    
+
+    <!-- Your hubs -->
+    <div class="query">
+        <label>Your Hubs:</label> <br>
+        <div id="your-hubs"></div>
     </div>
 
     <br>
@@ -85,19 +98,17 @@
         <label>Results:</label> <br>
         <div id="hub-matches"></div>
     </div>
-    
 
     <br>
 
-    <!-- Find Users -->
+    <!-- Join a hub -->
     <div class="query">
-        <!-- Input -->
-        <label>Find Users:</label> <br>
-        <input id="find-users" type="text" value="" placeholder="Username"/> <br>
-        <!-- Results -->
-        <label>Results:</label> <br>
-        <div id="user-matches"></div>
+        <label>Join a Hub:</label> <br>
+        <input id="hubid" type="text" placeholder="Hub ID"/>
+        <button onclick="beginWebsocket()">Join</button>
     </div>
+
+    <br>
 
     <br>
 
@@ -187,6 +198,7 @@
                         $("#token").append(token);
 
                         loadYourHubs();
+                        loadYourFriends();
                     }
                 },
                 error: function(data, textStatus, xhr) {
@@ -319,8 +331,6 @@
 
             $("#your-hubs").empty();
 
-            
-
             $.ajax({
                 type: 'GET',
                 url: "http://localhost:1212/my-hubs?token="+token,
@@ -335,6 +345,36 @@
                             hub.className = "hub";
                             hub.innerHTML = data[d].ID;
                             $("#your-hubs").append(hub);
+                        }
+                    }
+                },
+                error: function(data, textStatus, xhr) {
+                    console.log(data.responseText);
+                }
+            });
+
+        }
+
+        function loadYourFriends() {
+
+            $("#your-friends").empty();
+
+            $.ajax({
+                type: 'GET',
+                url: "http://localhost:1212/my-friends?token="+token,
+                success: function(data, textStatus, xhr) {
+                    if (xhr.status != 200) {
+                        console.log(data.responseText);
+                    } else {
+                        data = JSON.parse(data);
+
+                        console.log(data);
+
+                        for (var d in data) {
+                            var friend = document.createElement('div');
+                            friend.className = "friend";
+                            friend.innerHTML = data[d].Username + ": " + data[d].ID;
+                            $("#your-friends").append(friend);
                         }
                     }
                 },
