@@ -104,6 +104,9 @@ func GetHubs(w http.ResponseWriter, r *http.Request) {
 
 // GetUserHubs : returns all user hubs
 func GetUserHubs(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	
 	params := mux.Vars(r)
 	user := findUserByID(params["user_id"])
 	if user == nil {

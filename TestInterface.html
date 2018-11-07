@@ -49,6 +49,14 @@
     <br>
     <br>
 
+    <!-- Your hubs -->
+    <div class="query">
+        <label>Your Hubs:</label> <br>
+        <div id="your-hubs"></div>
+    </div>
+
+    <br>
+
     <!-- Join a hub -->
     <div class="query">
         <label>Join a Hub:</label> <br>
@@ -212,6 +220,8 @@
                         console.log("hub successfully created");
                         js = JSON.parse(data);
                         console.log(js);
+
+                        loadYourHubs();
                     }
                 },
                 error: function(data, textStatus, xhr) {
@@ -265,6 +275,8 @@
                         token = data.token;
                         uuid = data.uuid;
                         $("#token").append(token);
+
+                        loadYourHubs();
                     }
                 },
                 error: function(data, textStatus, xhr) {
@@ -273,6 +285,37 @@
             });
             return false;
         });
+
+
+        function loadYourHubs() {
+
+            $("#your-hubs").empty();
+
+            
+
+            $.ajax({
+                type: 'GET',
+                url: "http://localhost:1212/users/"+uuid+"/hubs",
+                success: function(data, textStatus, xhr) {
+                    if (xhr.status != 200) {
+                        console.log(data.responseText);
+                    } else {
+                        data = JSON.parse(data);
+
+                        for (var d in data) {
+                            var hub = document.createElement('div');
+                            hub.className = "hub";
+                            hub.innerHTML = data[d].ID;
+                            $("#your-hubs").append(hub);
+                        }
+                    }
+                },
+                error: function(data, textStatus, xhr) {
+                    console.log(data.responseText);
+                }
+            });
+
+        }
 
 
         // web socket handlers
