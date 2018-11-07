@@ -10,8 +10,10 @@
     <style>
         .query {
             border: 1px solid #000;
-            width: 400px;
-            padding: 20px;
+            width: 300px;
+            margin: 10px;
+            padding: 10px;
+            display: inline-block
         }
     </style>
 </head>
@@ -20,16 +22,16 @@
     <br>
 
     <!-- Registration -->
-    <form id="registration" method="POST" action="http://localhost:1212/register">
-        <label>Username</label><input name="username" type="text" value="" />
-        <label>Password</label><input name="password" type="password" value="" />
+    <form style="width:500px" class="query" id="registration" method="POST" action="http://localhost:1212/register">
+        <label>Username</label> <input name="username" type="text" value="" />
+        <label>Password</label> <input name="password" type="password" value="" />
         <input type="submit" value="Register" />
     </form>
 
     <br>
 
     <!-- Login -->
-    <form id="login" method="POST" action="http://localhost:1212/login">
+    <form style="width:500px" class="query" id="login" method="POST" action="http://localhost:1212/login">
         <label>Username</label><input name="username" type="text" value="" />
         <label>Password</label><input name="password" type="password" value="" />
         <input type="submit" value="Login" />
@@ -38,24 +40,22 @@
     <br>
 
     <!-- Token -->
-    <div id="token">Your token: </div>
+    <div class="query" id="token">Your token: </div>
 
     <br>
-    
 
+    <textarea class="query" id="messagebox" cols="30" rows="10" placeholder="Type a message"></textarea>
+
+    <br>
     <br>
 
     <!-- Join a hub -->
-    <div>
-        <input id="hubid" type="text" placeholder="Hub ID">
+    <div class="query">
+        <label>Join a Hub:</label> <br>
+        <input id="hubid" type="text" placeholder="Hub ID"/>
         <button onclick="beginWebsocket()">Join</button>
     </div>
 
-    <br>
-
-    <textarea id="messagebox" cols="30" rows="10"></textarea>
-
-    <br>
     <br>
 
     <!-- Create Hubs -->
@@ -72,7 +72,7 @@
     <div class="query">
         <!-- Input -->
         <label>Find Hubs:</label> <br>
-        <input id="find-hubs" type="text" value="" /> <br>
+        <input id="find-hubs" type="text" value="" placeholder="Hub Name"/> <br>
         <!-- Results -->
         <label>Results:</label> <br>
         <div id="hub-matches"></div>

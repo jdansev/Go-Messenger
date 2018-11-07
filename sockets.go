@@ -80,15 +80,15 @@ func ConnectionHandler(w http.ResponseWriter, r *http.Request) {
 	for {
 		var msg Message
 		err := ws.ReadJSON(&msg)
-		fmt.Println(msg)
-
-		h.recordMessage(&msg)
 
 		if err != nil {
 			log.Printf("error: %v", err)
 			delete(h.clients, ws)
 			break
 		}
+
+		h.recordMessage(&msg)
+
 		h.broadcast <- msg
 	}
 
@@ -113,13 +113,17 @@ func FuzzyFindHubs(w http.ResponseWriter, r *http.Request) {
 
 		matches := []*Hub{}
 		q := string(query)
-		if q != "" {
+
+		if q == "*" {
+			matches = hubs
+		} else if q != "" {
 			for _, h := range hubs {
 				if fuzzy.Match(q, h.ID) {
 					matches = append(matches, h)
 				}
 			}
 		}
+
 		js, _ := json.Marshal(matches)
 
 		err = c.WriteMessage(mt, js)

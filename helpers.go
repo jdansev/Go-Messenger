@@ -114,11 +114,21 @@ func getHub(id string) *Hub {
 }
 
 func (h *Hub) joinUser(u *User) {
+
+	if u.isMemberOf(h) { // already a member
+		return
+	}
+
 	h.addUserToHub(u)
 	u.joinHub(h)
 }
 
 func (h *Hub) unjoinUser(u *User) {
+
+	if !u.isMemberOf(h) { // not a member
+		return
+	}
+
 	h.removeUserFromHub(u)
 	u.leaveHub(h)
 }
@@ -231,6 +241,15 @@ func (u *User) leaveHub(h *Hub) bool {
 		if hub == h {
 			*jhs[i] = *jhs[len(jhs)-1]
 			u.Hubs = jhs[:len(jhs)-1]
+			return true
+		}
+	}
+	return false
+}
+
+func (u *User) isMemberOf(h *Hub) bool {
+	for _, m := range h.Members {
+		if u.ID == m.Member.ID {
 			return true
 		}
 	}
