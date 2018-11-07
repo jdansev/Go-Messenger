@@ -35,6 +35,7 @@ func main() {
 
 	// actions (secure APIs) must include valid token
 	router.HandleFunc("/create-hub", CreateHub).Methods("POST")
+	router.HandleFunc("/my-hubs", GetMyHubs).Methods("GET")
 
 	// authentication
 	router.HandleFunc("/register", Register).Methods("POST")

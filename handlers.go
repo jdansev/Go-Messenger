@@ -82,38 +82,29 @@ func GetMembers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode((hub.Members))
 }
 
-// GetHub : returns hub with id
-func GetHub(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
 
-	hub := getHub(params["hub_id"])
-	if hub == nil {
-		http.Error(w, "400 - hub doesn't exist!", http.StatusBadRequest)
-		return
-	}
 
-	runHubTests(hub)
 
-	json.NewEncoder(w).Encode(hub)
-}
+
+/* HUB APIs */
 
 // GetHubs : returns all hubs
 func GetHubs(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(hubs)
 }
 
-// GetUserHubs : returns all user hubs
-func GetUserHubs(w http.ResponseWriter, r *http.Request) {
-
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	
+// GetHub : returns hub with id
+func GetHub(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	user := findUserByID(params["user_id"])
-	if user == nil {
-		http.Error(w, "400 - user doesn't exist!", http.StatusBadRequest)
+	hub := getHub(params["hub_id"])
+	if hub == nil {
+		http.Error(w, "400 - hub doesn't exist!", http.StatusBadRequest)
 		return
 	}
-	json.NewEncoder(w).Encode(user.Hubs)
+
+	// runHubTests(hub)
+
+	json.NewEncoder(w).Encode(hub)
 }
 
 // GetUserFriends : returns all user friends
@@ -127,46 +118,73 @@ func GetUserFriends(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user.Friends)
 }
 
-// CreateHub : allow users to start a new hub
-func CreateHub(w http.ResponseWriter, r *http.Request) {
-
+// GetUserHubs : returns all user hubs
+func GetUserHubs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+	// 1. get user id from url parameter
+	params := mux.Vars(r)
+	user := findUserByID(params["user_id"])
+	if user == nil {
+		http.Error(w, "400 - user doesn't exist!", http.StatusBadRequest)
+		return
+	}
+	// 2. return user hubs
+	json.NewEncoder(w).Encode(user.Hubs)
+}
 
+// GetMyHubs : returns requesting user's hubs
+func GetMyHubs(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	// 1. Validate token
-
-	var tokenParam []string
-	var ok bool
-
-	tokenParam, ok = r.URL.Query()["token"]
-
+	tokenParam, ok := r.URL.Query()["token"]
 	if !ok || len(tokenParam) < 1 || tokenParam[0] == "undefined" {
 		http.Error(w, "400 - token invalid!", http.StatusBadRequest)
 		return
 	}
-
 	tok := tokenParam[0]
 	ok = validateToken(tok)
 	if !ok {
-		http.Error(w, "403 - you are not authorized to create hubs!", http.StatusForbidden)
+		http.Error(w, "403 - you are not authorized to fetch this user's hubs!", http.StatusForbidden)
 		return
 	}
-
 	// 2. Get the user's profile
 	u := getUserFromToken(tok)
 	if u == nil {
 		http.Error(w, "500 - error fetching user!", http.StatusInternalServerError)
 		return
 	}
+	// 3. Return user hubs
+	json.NewEncoder(w).Encode(u.Hubs)
+}
 
-	// // 2. Create the new hub
-
+// CreateHub : allow users to start a new hub
+func CreateHub(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	// 1. Validate token
+	tokenParam, ok := r.URL.Query()["token"]
+	if !ok || len(tokenParam) < 1 || tokenParam[0] == "undefined" {
+		http.Error(w, "400 - token invalid!", http.StatusBadRequest)
+		return
+	}
+	tok := tokenParam[0]
+	ok = validateToken(tok)
+	if !ok {
+		http.Error(w, "403 - you are not authorized to create hubs!", http.StatusForbidden)
+		return
+	}
+	// 2. Get the user's profile
+	u := getUserFromToken(tok)
+	if u == nil {
+		http.Error(w, "500 - error fetching user!", http.StatusInternalServerError)
+		return
+	}
+	// 3. Create the new hub
 	hid := r.FormValue("hub_id")
-
 	h := u.createHub(hid)
 	if h == nil {
 		http.Error(w, "400 - hub already exists!", http.StatusBadRequest)
 		return
 	}
-
+	// 4. Return it
 	json.NewEncoder(w).Encode(h)
 }

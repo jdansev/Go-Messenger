@@ -104,106 +104,17 @@
 
     <script type="text/javascript">
 
+        // user info
         var token;
         var email;
         var uuid;
 
-
-
+        // web sockets
+        var ws = null;
         var hubSearchWS = null;
         var userSearchWS = null
 
-        function connectUserSearchWebsocket() {
-
-            userSearchWS = new WebSocket("ws://localhost:1212/ws/find-users");
-            waitForSocketConnection(userSearchWS, function() {
-                console.log("Connected to user search websocket.");
-                userSearchWS.onmessage = function (evt) {
-
-                    var results = evt.data.split('\n');
-
-                    if (results.length > 0) {
-
-                        results = JSON.parse(results[0]);
-
-                        console.log(results);
-                        $("#user-matches").empty();
-
-                        for (var r in results) {
-                            var match = document.createElement('div');
-                            match.className = "user-match";
-                            var user = results[r]
-                            match.innerHTML = user.Username + ": " + user.ID;
-                            $("#user-matches").append(match);
-                        }
-
-                    } else {
-                        console.log("error parsing message!");
-                    }
-                };
-            });
-
-        }
-
-
-        function connectHubSearchWebsocket() {
-
-            hubSearchWS = new WebSocket("ws://localhost:1212/ws/find-hubs");
-            waitForSocketConnection(hubSearchWS, function() {
-                console.log("Connected to hub search websocket.");
-                hubSearchWS.onmessage = function (evt) {
-
-                    var results = evt.data.split('\n');
-
-                    if (results.length > 0) {
-
-                        results = JSON.parse(results[0]);
-
-                        console.log(results);
-                        $("#hub-matches").empty();
-
-                        for (var r in results) {
-                            var match = document.createElement('div');
-                            match.className = "hub-match";
-                            match.innerHTML = results[r].ID;
-                            $("#hub-matches").append(match);
-                        }
-
-                    } else {
-                        console.log("error parsing message!");
-                    }
-                };
-            });
-
-        }
-
-
-        $("#find-hubs").keydown(function(e) {
-
-            if (hubSearchWS == null || hubSearchWS.readyState != hubSearchWS.OPEN) {
-                console.log('you are not connected.');
-                connectHubSearchWebsocket();
-            }
-
-            waitForSocketConnection(hubSearchWS, function() {
-                hubSearchWS.send($("#find-hubs").val());
-            });
-
-        })
-
-        $("#find-users").keydown(function(e) {
-
-            if (userSearchWS == null || userSearchWS.readyState != userSearchWS.OPEN) {
-                console.log('you are not connected.');
-                connectUserSearchWebsocket();
-            }
-
-            waitForSocketConnection(userSearchWS, function() {
-                userSearchWS.send($("#find-users").val());
-            });
-
-        })
-
+        // form handlers
         $("#create-hub").submit(function(e) {
             var form = $(this);
             var url = form.attr('action') + "?token=" + token;
@@ -230,7 +141,6 @@
             });
             return false;
         });
-
 
         $("#registration").submit(function(e) {
             var form = $(this);
@@ -287,41 +197,7 @@
         });
 
 
-        function loadYourHubs() {
-
-            $("#your-hubs").empty();
-
-            
-
-            $.ajax({
-                type: 'GET',
-                url: "http://localhost:1212/users/"+uuid+"/hubs",
-                success: function(data, textStatus, xhr) {
-                    if (xhr.status != 200) {
-                        console.log(data.responseText);
-                    } else {
-                        data = JSON.parse(data);
-
-                        for (var d in data) {
-                            var hub = document.createElement('div');
-                            hub.className = "hub";
-                            hub.innerHTML = data[d].ID;
-                            $("#your-hubs").append(hub);
-                        }
-                    }
-                },
-                error: function(data, textStatus, xhr) {
-                    console.log(data.responseText);
-                }
-            });
-
-        }
-
-
-        // web socket handlers
-
-        var ws = null;
-
+        // web socket connections
         function beginWebsocket() {
 
             if (ws != null) ws.close();
@@ -347,8 +223,129 @@
             });
         }
 
-        $("#messagebox").keypress(
-        function(e){
+        function connectUserSearchWebsocket() {
+
+            userSearchWS = new WebSocket("ws://localhost:1212/ws/find-users");
+            waitForSocketConnection(userSearchWS, function() {
+                console.log("Connected to user search websocket.");
+                userSearchWS.onmessage = function (evt) {
+
+                    var results = evt.data.split('\n');
+
+                    if (results.length > 0) {
+
+                        results = JSON.parse(results[0]);
+
+                        console.log(results);
+                        $("#user-matches").empty();
+
+                        for (var r in results) {
+                            var match = document.createElement('div');
+                            match.className = "user-match";
+                            var user = results[r]
+                            match.innerHTML = user.Username + ": " + user.ID;
+                            $("#user-matches").append(match);
+                        }
+
+                    } else {
+                        console.log("error parsing message!");
+                    }
+                };
+            });
+
+        }
+
+        function connectHubSearchWebsocket() {
+
+            hubSearchWS = new WebSocket("ws://localhost:1212/ws/find-hubs");
+            waitForSocketConnection(hubSearchWS, function() {
+                console.log("Connected to hub search websocket.");
+                hubSearchWS.onmessage = function (evt) {
+
+                    var results = evt.data.split('\n');
+
+                    if (results.length > 0) {
+
+                        results = JSON.parse(results[0]);
+
+                        console.log(results);
+                        $("#hub-matches").empty();
+
+                        for (var r in results) {
+                            var match = document.createElement('div');
+                            match.className = "hub-match";
+                            match.innerHTML = results[r].ID;
+                            $("#hub-matches").append(match);
+                        }
+
+                    } else {
+                        console.log("error parsing message!");
+                    }
+                };
+            });
+
+        }
+
+
+        // websocket handlers
+        $("#find-hubs").keydown(function(e) {
+
+            if (hubSearchWS == null || hubSearchWS.readyState != hubSearchWS.OPEN) {
+                console.log('you are not connected.');
+                connectHubSearchWebsocket();
+            }
+
+            waitForSocketConnection(hubSearchWS, function() {
+                hubSearchWS.send($("#find-hubs").val());
+            });
+
+        })
+
+        $("#find-users").keydown(function(e) {
+
+            if (userSearchWS == null || userSearchWS.readyState != userSearchWS.OPEN) {
+                console.log('you are not connected.');
+                connectUserSearchWebsocket();
+            }
+
+            waitForSocketConnection(userSearchWS, function() {
+                userSearchWS.send($("#find-users").val());
+            });
+
+        })
+
+
+        function loadYourHubs() {
+
+            $("#your-hubs").empty();
+
+            
+
+            $.ajax({
+                type: 'GET',
+                url: "http://localhost:1212/my-hubs?token="+token,
+                success: function(data, textStatus, xhr) {
+                    if (xhr.status != 200) {
+                        console.log(data.responseText);
+                    } else {
+                        data = JSON.parse(data);
+
+                        for (var d in data) {
+                            var hub = document.createElement('div');
+                            hub.className = "hub";
+                            hub.innerHTML = data[d].ID;
+                            $("#your-hubs").append(hub);
+                        }
+                    }
+                },
+                error: function(data, textStatus, xhr) {
+                    console.log(data.responseText);
+                }
+            });
+
+        }
+
+        $("#messagebox").keypress(function(e){
             if (e.keyCode == 13) {
                 e.preventDefault();
                 sendMessage($(this).val());

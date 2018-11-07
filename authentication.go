@@ -33,7 +33,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newUser := createUser(usr, pwd)
-
 	json.NewEncoder(w).Encode(newUser)
 }
 
