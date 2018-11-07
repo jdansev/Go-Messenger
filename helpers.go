@@ -48,13 +48,6 @@ func (u *User) generateToken() string {
 	return tokenString
 }
 
-func validateToken(tokenString string) bool {
-	_, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return mySigningKey, nil
-	})
-	return err == nil
-}
-
 func getUserFromToken(t string) *User {
 	token, _ := jwt.Parse(t, func(token *jwt.Token) (interface{}, error) {
 		return mySigningKey, nil
@@ -200,29 +193,31 @@ func (u *User) hasRequested(f *User) bool {
 }
 
 // TODO: friends requests
-func (u *User) sendFriendRequestTo(f *User) {
-
+func (u *User) sendFriendRequestTo(f *User) bool {
 	if u.isFriendsWith(f) || u.hasRequested(f) {
-		return // already friends
+		return false // already friends or already requested
 	}
-
 	request := &Friend{u.ID, u.Username}
 	f.Requests = append(f.Requests, request)
+	return true
 }
 
-func (u *User) acceptFriendRequest(f *User) {
-
+func (u *User) acceptFriendRequest(f *User) bool {
 	if !f.hasRequested(u) { // didn't send a request
-		return
+		return false
 	}
-
 	u.addFriend(f)
 	f.addFriend(u)
 	u.removeFriendRequest(f)
+	return true
 }
 
-func (u *User) declineFriendRequest(f *User) {
+func (u *User) declineFriendRequest(f *User) bool {
+	if u.isFriendsWith(f) || !f.hasRequested(u) {
+		return false // already friends or haven't requested
+	}
 	u.removeFriendRequest(f)
+	return true
 }
 
 func (u *User) removeFriendRequest(f *User) bool {

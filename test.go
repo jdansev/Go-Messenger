@@ -25,6 +25,10 @@ func addTestHubs() {
 
 }
 
+var p1 *User
+var p2 *User
+var p3 *User
+
 func createTestUsers() {
 	p1 = createUser("testuser1", "secret-key")
 	p2 = createUser("testuser2", "secret-key")

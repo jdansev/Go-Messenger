@@ -50,15 +50,26 @@
     <br>
     <br>
 
+     <!-- Send friend request -->
+     <div class="query">
+        <label>Send friend request:</label> <br>
+        <input id="friend-request" type="text" placeholder="User ID"/>
+        <button onclick="sendFriendRequest()">Send Request</button>
+    </div>
+
+    <br>
+
     <!-- Your friends -->
     <div class="query">
         <label>Your Friends:</label> <br>
         <div id="your-friends"></div>
     </div>
 
+    <!-- TODO: Your friend requests -->
+
     <br>
 
-    <!-- Find Users -->
+    <!-- Find users -->
     <div class="query">
         <!-- Input -->
         <label>Find Users:</label> <br>
@@ -79,7 +90,7 @@
 
     <br>
 
-    <!-- Create Hubs -->
+    <!-- Create hubs -->
     <div class="query">
         <form id="create-hub" method="POST" action="http://localhost:1212/create-hub">
             <label>Create a new Hub:</label> <br>
@@ -326,6 +337,30 @@
 
         })
 
+        function sendFriendRequest() {
+
+            var url = "http://localhost:1212/send-friend-request?token="+token;
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: {
+                    token: token,
+                    user_id: $("#friend-request").val()
+                },
+                success: function(data, textStatus, xhr) {
+                    if (xhr.status != 200) {
+                        console.log(data.responseText);
+                    } else {
+                        // js = JSON.parse(data);
+                        console.log(textStatus);
+                    }
+                },
+                error: function(data, textStatus, xhr) {
+                    console.log(data.responseText);
+                }
+            });
+            
+        }
 
         function loadYourHubs() {
 

@@ -3,8 +3,6 @@ package main
 import (
 	"encoding/json"
 	"net/http"
-
-	"github.com/gorilla/mux"
 )
 
 func runHubTests(h *Hub) {
@@ -25,11 +23,9 @@ func runHubTests(h *Hub) {
 	}
 
 	// TEST 4: remove two friends from p1
-
 	if len(p1.Friends) > 0 {
 		p1.removeFriend(p1.Friends[0])
 	}
-
 	if len(p1.Friends) > 0 {
 		p1.removeFriend(p1.Friends[0])
 	}
@@ -38,13 +34,12 @@ func runHubTests(h *Hub) {
 
 // GetUser : returns a user from an id
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	user := findUserByID(params["user_id"])
-	if user == nil {
-		http.Error(w, "400 - user doesn't exist!", http.StatusBadRequest)
-		return
+
+	// 1. Get user id from path
+	if u, ok := validateUserIDFromPath(w, r); ok {
+		json.NewEncoder(w).Encode(u)
 	}
-	json.NewEncoder(w).Encode(user)
+
 }
 
 // GetUsers : returns all users
@@ -55,63 +50,45 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 // GetMessages : returns all messages for a hub
 func GetMessages(w http.ResponseWriter, r *http.Request) {
 
-	params := mux.Vars(r)
-	hub := getHub(params["hub_id"])
-	if hub == nil {
-		http.Error(w, "400 - hub doesn't exist!", http.StatusBadRequest)
-		return
+	// 1. Get hub id from path
+	if h, ok := validateHubIDFromPath(w, r); ok {
+		json.NewEncoder(w).Encode(h.Messages)
 	}
 
-	runHubTests(hub)
-
-	json.NewEncoder(w).Encode(hub.Messages)
 }
 
 // GetMembers : returns all members in a hub
 func GetMembers(w http.ResponseWriter, r *http.Request) {
 
-	params := mux.Vars(r)
-	hub := getHub(params["hub_id"])
-	if hub == nil {
-		http.Error(w, "400 - hub doesn't exist!", http.StatusBadRequest)
-		return
+	// 1. Get hub id from path
+	if h, ok := validateHubIDFromPath(w, r); ok {
+		json.NewEncoder(w).Encode((h.Members))
 	}
 
-	runHubTests(hub)
-
-	json.NewEncoder(w).Encode((hub.Members))
 }
-
-
-
 
 // GetMyFriends : returns requesting user's friends
 func GetMyFriends(w http.ResponseWriter, r *http.Request) {
+
+	var tok string
+	var ok bool
+	var u *User
+
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	// 1. Validate token
-	tokenParam, ok := r.URL.Query()["token"]
-	if !ok || len(tokenParam) < 1 || tokenParam[0] == "undefined" {
-		http.Error(w, "400 - token invalid!", http.StatusBadRequest)
+
+	// 1. Validate token from url
+	if tok, ok = validateURLToken(w, r); !ok {
 		return
 	}
-	tok := tokenParam[0]
-	ok = validateToken(tok)
-	if !ok {
-		http.Error(w, "403 - you are not authorized to fetch this user's friends!", http.StatusForbidden)
-		return
-	}
+
 	// 2. Get the user's profile
-	u := getUserFromToken(tok)
-	if u == nil {
-		http.Error(w, "500 - error fetching user!", http.StatusInternalServerError)
+	if u, ok = validateUserFromToken(tok, w); !ok {
 		return
 	}
+
 	// 3. Return user hubs
 	json.NewEncoder(w).Encode(u.Friends)
 }
-
-
-
 
 /* HUB APIs */
 
@@ -122,89 +99,75 @@ func GetHubs(w http.ResponseWriter, r *http.Request) {
 
 // GetHub : returns hub with id
 func GetHub(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	hub := getHub(params["hub_id"])
-	if hub == nil {
-		http.Error(w, "400 - hub doesn't exist!", http.StatusBadRequest)
-		return
+
+	// 1. Get hub id from path
+	if h, ok := validateHubIDFromPath(w, r); ok {
+		json.NewEncoder(w).Encode((h))
 	}
 
-	// runHubTests(hub)
-
-	json.NewEncoder(w).Encode(hub)
 }
 
 // GetUserFriends : returns all user friends
 func GetUserFriends(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	user := findUserByID(params["user_id"])
-	if user == nil {
-		http.Error(w, "400 - user doesn't exist!", http.StatusBadRequest)
-		return
+
+	// 1. Get user id from path
+	if u, ok := validateUserIDFromPath(w, r); ok {
+		json.NewEncoder(w).Encode(u.Friends)
 	}
-	json.NewEncoder(w).Encode(user.Friends)
+
 }
 
 // GetUserHubs : returns all user hubs
 func GetUserHubs(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	// 1. get user id from url parameter
-	params := mux.Vars(r)
-	user := findUserByID(params["user_id"])
-	if user == nil {
-		http.Error(w, "400 - user doesn't exist!", http.StatusBadRequest)
-		return
+
+	// 1. Get user id from path
+	if u, ok := validateUserIDFromPath(w, r); ok {
+		json.NewEncoder(w).Encode(u.Hubs)
 	}
-	// 2. return user hubs
-	json.NewEncoder(w).Encode(user.Hubs)
 }
 
 // GetMyHubs : returns requesting user's hubs
 func GetMyHubs(w http.ResponseWriter, r *http.Request) {
+
+	var tok string
+	var ok bool
+	var u *User
+
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	// 1. Validate token
-	tokenParam, ok := r.URL.Query()["token"]
-	if !ok || len(tokenParam) < 1 || tokenParam[0] == "undefined" {
-		http.Error(w, "400 - token invalid!", http.StatusBadRequest)
+
+	// 1. Validate token from url
+	if tok, ok = validateURLToken(w, r); !ok {
 		return
 	}
-	tok := tokenParam[0]
-	ok = validateToken(tok)
-	if !ok {
-		http.Error(w, "403 - you are not authorized to fetch this user's hubs!", http.StatusForbidden)
-		return
-	}
+
 	// 2. Get the user's profile
-	u := getUserFromToken(tok)
-	if u == nil {
-		http.Error(w, "500 - error fetching user!", http.StatusInternalServerError)
+	if u, ok = validateUserFromToken(tok, w); !ok {
 		return
 	}
+
 	// 3. Return user hubs
 	json.NewEncoder(w).Encode(u.Hubs)
 }
 
 // CreateHub : allow users to start a new hub
 func CreateHub(w http.ResponseWriter, r *http.Request) {
+
+	var tok string
+	var ok bool
+	var u *User
+
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	// 1. Validate token
-	tokenParam, ok := r.URL.Query()["token"]
-	if !ok || len(tokenParam) < 1 || tokenParam[0] == "undefined" {
-		http.Error(w, "400 - token invalid!", http.StatusBadRequest)
+
+	// 1. Validate token from url
+	if tok, ok = validateURLToken(w, r); !ok {
 		return
 	}
-	tok := tokenParam[0]
-	ok = validateToken(tok)
-	if !ok {
-		http.Error(w, "403 - you are not authorized to create hubs!", http.StatusForbidden)
-		return
-	}
+
 	// 2. Get the user's profile
-	u := getUserFromToken(tok)
-	if u == nil {
-		http.Error(w, "500 - error fetching user!", http.StatusInternalServerError)
+	if u, ok = validateUserFromToken(tok, w); !ok {
 		return
 	}
+
 	// 3. Create the new hub
 	hid := r.FormValue("hub_id")
 	h := u.createHub(hid)
@@ -212,6 +175,104 @@ func CreateHub(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "400 - hub already exists!", http.StatusBadRequest)
 		return
 	}
+
 	// 4. Return it
 	json.NewEncoder(w).Encode(h)
+}
+
+// TODO: change all post requests in template to not use forms
+
+// SendFriendRequest : sends a request to the user with id
+func SendFriendRequest(w http.ResponseWriter, r *http.Request) {
+
+	var tok string
+	var ok bool
+	var u, fu *User
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// 1. Validate token
+	if tok, ok = validateFormToken(w, r); !ok {
+		return
+	}
+
+	// 2. Get the user's profile
+	if u, ok = validateUserFromToken(tok, w); !ok {
+		return
+	}
+
+	// 3. Get the user who will receive the friend request
+	if fu, ok = validateUserIDFromForm(w, r); !ok || u == fu {
+		return
+	}
+
+	// 4. Send the friend request
+	if ok = u.sendFriendRequestTo(fu); !ok {
+		http.Error(w, "400 - already friends!", http.StatusBadRequest)
+		return
+	}
+}
+
+// AcceptFriendRequest : accepts friend request from user with id
+func AcceptFriendRequest(w http.ResponseWriter, r *http.Request) {
+
+	var tok string
+	var ok bool
+	var u, fu *User
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// 1. Validate token
+	if tok, ok = validateFormToken(w, r); !ok {
+		return
+	}
+
+	// 2. Get the user's profile
+	if u, ok = validateUserFromToken(tok, w); !ok {
+		return
+	}
+
+	// 3. Get the user who's request will be accepted
+	if fu, ok = validateUserIDFromForm(w, r); !ok || u == fu {
+		return
+	}
+
+	// 4. Accept the request
+	if ok = u.acceptFriendRequest(fu); !ok {
+		http.Error(w, "400 - cannot accept request from this user!", http.StatusBadRequest)
+		return
+	}
+
+}
+
+// DeclineFriendRequest : declines friend request from user with id
+func DeclineFriendRequest(w http.ResponseWriter, r *http.Request) {
+
+	var tok string
+	var ok bool
+	var u, fu *User
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// 1. Validate token
+	if tok, ok = validateFormToken(w, r); !ok {
+		return
+	}
+
+	// 2. Get the user's profile
+	if u, ok = validateUserFromToken(tok, w); !ok {
+		return
+	}
+
+	// 3. Get the user who's request will be declined
+	if fu, ok = validateUserIDFromForm(w, r); !ok || u == fu {
+		return
+	}
+
+	// 4. Decline the request
+	if ok = u.declineFriendRequest(fu); !ok {
+		http.Error(w, "400 - cannot decline request from this user!", http.StatusBadRequest)
+		return
+	}
+
 }

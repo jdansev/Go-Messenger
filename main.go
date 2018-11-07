@@ -8,10 +8,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var p1 *User
-var p2 *User
-var p3 *User
-
 var users = []*User{}
 var hubs = []*Hub{}
 
@@ -35,6 +31,9 @@ func main() {
 
 	// actions (secure APIs) must include valid token
 	router.HandleFunc("/create-hub", CreateHub).Methods("POST")
+	router.HandleFunc("/send-friend-request", SendFriendRequest).Methods("POST")
+	router.HandleFunc("/accept-friend-request", AcceptFriendRequest).Methods("POST")
+	router.HandleFunc("/decline-friend-request", DeclineFriendRequest).Methods("POST")
 	router.HandleFunc("/my-hubs", GetMyHubs).Methods("GET")
 	router.HandleFunc("/my-friends", GetMyFriends).Methods("GET")
 
