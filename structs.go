@@ -8,6 +8,7 @@ type User struct {
 	Username string
 	Password string
 	Friends  []*Friend
+	Requests []*Friend
 	Hubs     []*JoinedHubs
 }
 

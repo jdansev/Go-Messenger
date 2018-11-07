@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -173,6 +174,7 @@ func (f *Friend) getFriendUser() *User {
 	return nil
 }
 
+
 // User helpers
 
 func createUser(username, password string) *User {
@@ -183,11 +185,44 @@ func createUser(username, password string) *User {
 		username,
 		string(passwordHash),
 		[]*Friend{},
+		[]*Friend{},
 		[]*JoinedHubs{},
 	}
 	addUser(u)
 	return u
 }
+
+// TODO: friends requests
+func (u *User) sendFriendRequestTo(f *User) {
+
+	if u.isFriendsWith(f) {
+		return // already friends
+	}
+
+	request := &Friend{u.ID, u.Username}
+	f.Requests = append(f.Requests, request)
+}
+
+func (u *User) acceptFriendRequest(f *User) {
+	u.addFriend(f)
+	f.addFriend(u)
+	u.removeFriendRequest(f)
+}
+
+func (u *User) removeFriendRequest(f *User) bool {
+	fmt.Println("remove request")
+	r := u.Requests
+	for i, friend := range r {
+		fmt.Println(friend.ID)
+		if f.ID == friend.ID {
+			*r[i] = *r[len(r)-1]
+			u.Requests = r[:len(r)-1]
+			return true
+		}
+	}
+	return false
+}
+
 
 // TODO: deactivate user
 
