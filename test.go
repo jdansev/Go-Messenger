@@ -30,15 +30,21 @@ func createTestUsers() {
 	p2 = createUser("testuser2", "secret-key")
 	p3 = createUser("testuser3", "secret-key")
 
+	// add friends
 	p1.sendFriendRequestTo(p3)
 	p3.acceptFriendRequest(p1)
 
-	// add friends
-	// p1.addFriend(p2)
-	// p3.addFriend(p1)
-	// p1.addFriend(p2)
-	// p1.addFriend(p3)
-	// p3.addFriend(p2)
+	p2.sendFriendRequestTo(p1)
+	p1.declineFriendRequest(p2)
+
+	p1.sendFriendRequestTo(p2)
+
+	p3.sendFriendRequestTo(p1)
+	p1.sendFriendRequestTo(p2)
+
+	p2.acceptFriendRequest(p3)
+
+	
 }
 
 func (h *Hub) addTestUsersToHub() {

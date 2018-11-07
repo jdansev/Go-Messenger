@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -174,7 +173,6 @@ func (f *Friend) getFriendUser() *User {
 	return nil
 }
 
-
 // User helpers
 
 func createUser(username, password string) *User {
@@ -192,10 +190,19 @@ func createUser(username, password string) *User {
 	return u
 }
 
+func (u *User) hasRequested(f *User) bool {
+	for _, friend := range f.Requests {
+		if friend.ID == u.ID {
+			return true
+		}
+	}
+	return false
+}
+
 // TODO: friends requests
 func (u *User) sendFriendRequestTo(f *User) {
 
-	if u.isFriendsWith(f) {
+	if u.isFriendsWith(f) || u.hasRequested(f) {
 		return // already friends
 	}
 
@@ -204,16 +211,23 @@ func (u *User) sendFriendRequestTo(f *User) {
 }
 
 func (u *User) acceptFriendRequest(f *User) {
+
+	if !f.hasRequested(u) { // didn't send a request
+		return
+	}
+
 	u.addFriend(f)
 	f.addFriend(u)
 	u.removeFriendRequest(f)
 }
 
+func (u *User) declineFriendRequest(f *User) {
+	u.removeFriendRequest(f)
+}
+
 func (u *User) removeFriendRequest(f *User) bool {
-	fmt.Println("remove request")
 	r := u.Requests
 	for i, friend := range r {
-		fmt.Println(friend.ID)
 		if f.ID == friend.ID {
 			*r[i] = *r[len(r)-1]
 			u.Requests = r[:len(r)-1]
@@ -222,7 +236,6 @@ func (u *User) removeFriendRequest(f *User) bool {
 	}
 	return false
 }
-
 
 // TODO: deactivate user
 
