@@ -12,14 +12,14 @@ func addTestHubs() {
 	// Manual creation of hubs
 	createTestUsers()
 
-	h := createHub("hub1")
+	h := createHub("hub1", "private")
 	h.addTestUsersToHub()
 	h.addTestMessagesToHub()
 
 	addHub(h)
 
 	// user creation of hubs
-	h2 := p1.createHub("p1s-hub")
+	h2 := p1.createHub("p1s-hub", "public")
 	go h2.MessageHandler()
 	// p1.leaveHub(h2)
 

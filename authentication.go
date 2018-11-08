@@ -68,9 +68,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token := u.generateToken()
+
 	js, _ := json.Marshal(map[string]string{
+		"username": u.Username,
+		"id": u.ID,
 		"token": token,
-		"uuid": u.ID,
 	})
 
 	w.Header().Set("Content-Type", "application/json")

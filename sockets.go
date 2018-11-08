@@ -62,12 +62,15 @@ func ConnectionHandler(w http.ResponseWriter, r *http.Request) {
 	// join an existing hub otherwise create it
 	h := getHub(hid)
 	if h == nil {
-		h = u.createHub(hid)
-		fmt.Println("created new hub")
-	} else {
-		h.joinUser(u)
-		fmt.Println("hub exists, adding new user to it")
+
+		http.Error(w, "400 - hub doesn't exist!", http.StatusBadRequest)
+		return
+
 	}
+
+	h.joinUser(u)
+	fmt.Println("hub exists, adding new user to it")
+
 
 	ws, err := upgrader.Upgrade(w, r, nil)
 	fmt.Println(ws)

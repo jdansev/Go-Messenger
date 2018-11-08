@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -36,7 +37,7 @@ func runHubTests(h *Hub) {
 func NukeServer(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	
+
 	nukeServerData()
 }
 
@@ -176,13 +177,17 @@ func CreateHub(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	vis := r.FormValue("hub_visibility")
+
 	// 3. Create the new hub
 	hid := r.FormValue("hub_id")
-	h := u.createHub(hid)
+	h := u.createHub(hid, vis)
 	if h == nil {
 		http.Error(w, "400 - hub already exists!", http.StatusBadRequest)
 		return
 	}
+
+	fmt.Println(h)
 
 	// 4. Return it
 	json.NewEncoder(w).Encode(h)
@@ -225,7 +230,7 @@ func SendFriendRequest(w http.ResponseWriter, r *http.Request) {
 	ok = n.Notify()
 	if !ok {
 		u.ws.WriteJSON([]string{
-			"recipient is not connected!",
+			"request sent, recipient is offline!",
 		})
 	}
 }
@@ -274,7 +279,7 @@ func AcceptFriendRequest(w http.ResponseWriter, r *http.Request) {
 	ok = n2.Notify()
 	if !ok {
 		u.ws.WriteJSON([]string{
-			"user is not connected!",
+			"request accepted, recipient is offline!",
 		})
 	}
 
@@ -309,6 +314,10 @@ func DeclineFriendRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "400 - cannot decline request from this user!", http.StatusBadRequest)
 		return
 	}
+
+	// 6. Notify the declining user
+	n := &Notification{u, "declineRequest"}
+	n.Notify()
 
 }
 

@@ -38,6 +38,8 @@
     <button onclick="loginUser('asdf','asdf')">Login User ASDF</button>
     <button onclick="loginUser('qwer','qwer')">Login User QWER</button>
 
+    <br>
+
     <!-- Registration -->
     <form style="width:500px" class="query" id="registration" method="POST" action="http://localhost:1212/register">
         <label>Username</label> <input name="username" type="text" value="" />
@@ -56,8 +58,17 @@
 
     <br>
 
+    <!-- User Profile -->
+    <div class="query">
+        <div>Your Username: <span id="user-name"></span></div>
+        <div>Your ID: <span id="user-id"></span></div>
+    </div>
+    
+
+    <br>
+
     <!-- Token -->
-    <div class="query" id="token">Your token: </div>
+    <div class="query">Your token: <span id="token"></span></div>
 
     <br>
 
@@ -116,7 +127,10 @@
     <div class="query">
         <form id="create-hub" method="POST" action="http://localhost:1212/create-hub">
             <label>Create a new Hub:</label> <br>
-            <input id="create-hub" name="hub_id" type="text" value="" placeholder="Hub Name"/> <button type="submit">Create</button>
+            <input id="create-hub-id" name="hub_id" type="text" value="" placeholder="Hub Name"/> <button type="submit">Create</button><br>
+            <input type="radio" name="hub-visibility" value="public" checked><label>public</label>
+            <input type="radio" name="hub-visibility" value="private"><label>private</label>
+            <input type="radio" name="hub-visibility" value="secret"><label>secret</label>
         </form>
     </div>
 
@@ -149,9 +163,10 @@
     <script type="text/javascript">
 
         // user info
-        var token;
-        var email;
+        var username;
         var uuid;
+        var token;
+        var email; // not used
 
         // web sockets
         // TODO: reduce this to maybe two sockets only
@@ -159,6 +174,29 @@
         var hubSearchWS = null;
         var userSearchWS = null
         var notificationWS = null;
+
+        function resetUserDetails() {
+            token = null;
+            email = null;
+            uuid = null;
+
+            // close all websocket connections
+            if (ws != null && ws.readyState !== ws.CLOSED) {
+                ws.close();
+            }
+
+            if (hubSearchWS != null && hubSearchWS.readyState !== hubSearchWS.CLOSED) {
+                hubSearchWS.close();
+            }
+
+            if (userSearchWS != null && userSearchWS.readyState !== userSearchWS.CLOSED) {
+                userSearchWS.close();
+            }
+
+            if (notificationWS != null && notificationWS.readyState !== notificationWS.CLOSED) {
+                notificationWS.close();
+            }
+        }
 
         // test functions
         function nukeServer() {
@@ -194,10 +232,20 @@
                     if (xhr.status != 200) {
                         console.log(data.responseText);
                     } else {
+                        
+                        resetUserDetails();
+
                         console.log(data);
-                        email = data.email;
+
+                        username = data.username;
+                        uuid = data.id;
                         token = data.token;
-                        uuid = data.uuid;
+
+                        $("#user-name").empty();
+                        $("#user-name").append(username);
+
+                        $("#user-id").empty();
+                        $("#user-id").append(uuid);
 
                         $("#token").empty();
                         $("#token").append(token);
@@ -207,6 +255,7 @@
                         loadFriendRequests();
 
                         connectNotificationWebSocket();
+
                     }
                 },
                 error: function(data, textStatus, xhr) {
@@ -217,6 +266,9 @@
         }
 
         function registerUser(n, p) {
+
+            // Reigistration
+
             $.ajax({
                 type: 'POST',
                 url: 'http://localhost:1212/register',
@@ -231,6 +283,8 @@
                         var js = JSON.parse(data);
                         console.log(js);
 
+                        // Login
+
                         $.ajax({
                             type: 'POST',
                             url: 'http://localhost:1212/login',
@@ -242,10 +296,21 @@
                                 if (xhr.status != 200) {
                                     console.log(data.responseText);
                                 } else {
+
+                                    resetUserDetails();
+
                                     console.log(data);
-                                    email = data.email;
+
+                                    username = data.username;
+                                    uuid = data.id;
                                     token = data.token;
-                                    uuid = data.uuid;
+
+                                    $("#user-name").empty();
+                                    $("#user-name").append(username);
+
+                                    $("#user-id").empty();
+                                    $("#user-id").append(uuid);
+
                                     $("#token").empty();
                                     $("#token").append(token);
 
@@ -253,7 +318,7 @@
                                     loadYourFriends();
                                     loadFriendRequests();
 
-                                    connectNotificationWebSocket();
+                                    connectNotificationWebSocket(); 
                                 }
                             },
                             error: function(data, textStatus, xhr) {
@@ -275,6 +340,8 @@
 
         // form handlers
         $("#create-hub").submit(function(e) {
+            var visibility = $('input[name=hub-visibility]:checked').val();
+            console.log(visibility);
             var form = $(this);
             var url = form.attr('action') + "?token=" + token;
             e.stopPropagation();
@@ -282,7 +349,10 @@
             $.ajax({
                 type: 'POST',
                 url: url,
-                data: form.serialize(),
+                data: {
+                    hub_id: $('#create-hub-id').val(),
+                    hub_visibility: visibility
+                },
                 success: function(data, textStatus, xhr) {
                     if (xhr.status != 200) {
                         console.log(data.responseText);
@@ -339,10 +409,21 @@
                     if (xhr.status != 200) {
                         console.log(data.responseText);
                     } else {
+
+                        resetUserDetails();
+
                         console.log(data);
-                        email = data.email;
+
+                        username = data.username;
+                        uuid = data.id;
                         token = data.token;
-                        uuid = data.uuid;
+
+                        $("#user-name").empty();
+                        $("#user-name").append(username);
+
+                        $("#user-id").empty();
+                        $("#user-id").append(uuid);
+
                         $("#token").empty();
                         $("#token").append(token);
 
@@ -360,11 +441,6 @@
             return false;
         });
 
-        // TODO: make this a button instead
-        $(document).on('click', '.friend-request', function() {
-            console.log('clicked');
-            acceptFriendRequest($(this).data("id"));
-        });
 
         // web socket connections
         function beginWebsocket() {
@@ -478,25 +554,14 @@
                             loadYourFriends();
                             loadFriendRequests();
                             break;
+                        case "declineRequest":
+                            loadFriendRequests();
                         default:
                     }
 
                 };
 
             });
-        }
-
-        function sendNotification(user_id) {
-
-            if (notificationWS == null || notificationWS.readyState != notificationWS.OPEN) {
-                console.log('cannot send or receive notifications.');
-                connectNotificationWebSocket();
-            }
-
-            waitForSocketConnection(notificationWS, function() {
-                notificationWS.send(user_id);
-            });
-
         }
 
 
@@ -585,6 +650,30 @@
                 }
             });
 
+        }
+
+        function declineFriendRequest(user_id) {
+
+            var url = "http://localhost:1212/decline-friend-request?token="+token;
+
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: {
+                    token: token,
+                    user_id: user_id
+                },
+                success: function(data, textStatus, xhr) {
+                    if (xhr.status != 200) {
+                        console.log(data.responseText);
+                    } else {
+                        console.log(textStatus);
+                    }
+                },
+                error: function(data, textStatus, xhr) {
+                    console.log(data.responseText);
+                }
+            });
         }
 
         function loadYourHubs() {
@@ -676,6 +765,26 @@
                             fr.data("username", data[d].Username);
                             fr.data("id", data[d].ID);
                             fr.appendTo('#your-friend-requests');
+
+                            var acceptBtn = $('<button/>', {
+                                class: 'accept-request',
+                            });
+                            acceptBtn.append("accept");
+                            acceptBtn.on('click', function() { // only works when passed through a function for some reason
+                                acceptFriendRequest(data[d].ID)
+                            });
+                            acceptBtn.appendTo(fr);
+
+
+                            var declineBtn = $('<button/>', {
+                                class: 'decline-request',
+                            });
+                            declineBtn.append("decline");
+                            declineBtn.on('click', function() {
+                                declineFriendRequest(data[d].ID)
+                            });
+
+                            declineBtn.appendTo(fr);
 
                         }
                     }

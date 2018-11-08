@@ -25,13 +25,12 @@ type Friend struct {
 	Username string
 }
 
-// TODO: public and private hubs
-
 // Hub : collection of users
 type Hub struct {
-	ID       string
-	Members  []*Member
-	Messages []*Message
+	ID         string
+	Visibility string
+	Members    []*Member
+	Messages   []*Message
 
 	clients   map[*websocket.Conn]bool
 	broadcast chan Message

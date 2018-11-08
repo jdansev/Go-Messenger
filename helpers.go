@@ -82,9 +82,10 @@ func removeHub(h *Hub) bool {
 	return false
 }
 
-func createHub(id string) *Hub {
+func createHub(id, vis string) *Hub {
 	h := &Hub{
 		ID:        id,
+		Visibility: vis,
 		broadcast: make(chan Message),
 		clients:   make(map[*websocket.Conn]bool),
 		Members:   []*Member{},
@@ -269,11 +270,11 @@ func (u *User) removeFriend(f *Friend) bool {
 	return false
 }
 
-func (u *User) createHub(id string) *Hub {
+func (u *User) createHub(id, vis string) *Hub {
 	if getHub(id) != nil { // hub already exists, so don't create it
 		return nil
 	}
-	h := createHub(id)
+	h := createHub(id, vis)
 	addHub(h)
 	h.joinUser(u)
 	h.setAdmin(u, true)
