@@ -33,10 +33,10 @@
     <br>
 
     <button onclick="nukeServer()">Nuke Server</button>
-    <button onclick="registerUser('asdf','asdf')">Register/Login User 1</button>
-    <button onclick="registerUser('qwer','qwer')">Register/Login User 2</button>
-    <button onclick="loginUser('asdf','asdf')">Login User 1</button>
-    <button onclick="loginUser('qwer','qwer')">Login User 2</button>
+    <button onclick="registerUser('asdf','asdf')">Register/Login User ASDF</button>
+    <button onclick="registerUser('qwer','qwer')">Register/Login User QWER</button>
+    <button onclick="loginUser('asdf','asdf')">Login User ASDF</button>
+    <button onclick="loginUser('qwer','qwer')">Login User QWER</button>
 
     <!-- Registration -->
     <form style="width:500px" class="query" id="registration" method="POST" action="http://localhost:1212/register">
@@ -172,6 +172,7 @@
                     } else {
                         console.log(textStatus);
                     }
+                    location.reload();
                 },
                 error: function(data, textStatus, xhr) {
                     console.log(data.responseText);
@@ -245,6 +246,7 @@
                                     email = data.email;
                                     token = data.token;
                                     uuid = data.uuid;
+                                    $("#token").empty();
                                     $("#token").append(token);
 
                                     loadYourHubs();
@@ -341,6 +343,7 @@
                         email = data.email;
                         token = data.token;
                         uuid = data.uuid;
+                        $("#token").empty();
                         $("#token").append(token);
 
                         loadYourHubs();
@@ -596,6 +599,8 @@
                         console.log(data.responseText);
                     } else {
                         data = JSON.parse(data);
+
+                        $("#your-hubs").empty();
 
                         for (var d in data) {
                             var hub = document.createElement('div');
