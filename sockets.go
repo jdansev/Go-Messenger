@@ -232,7 +232,7 @@ func (n *Notification) Notify() bool {
 	}
 
 	if n.Recipient.ws == nil {
-		fmt.Println("user has no notifications socket")
+		// user has no notifications socket
 		return false
 	}
 

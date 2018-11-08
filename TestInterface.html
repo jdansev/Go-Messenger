@@ -16,6 +16,16 @@
             display: inline-block;
             word-wrap: break-word;
         }
+
+        .friend-request {
+            cursor: pointer;
+            border: 1px solid #000;
+        }
+
+        .friend {
+            cursor: pointer;
+            border: 1px solid #000;
+        }
     </style>
 </head>
 <body>
@@ -230,6 +240,10 @@
             return false;
         });
 
+        $(document).on('click', '.friend-request', function() {
+            console.log('clicked');
+            acceptFriendRequest($(this).data("id"));
+        });
 
         // web socket connections
         function beginWebsocket() {
@@ -333,8 +347,17 @@
                     var msg = JSON.parse(messages[0]);
                     console.log(msg);
 
-                    if (msg.Type == "friendRequest") {
-                        loadFriendRequests();
+
+
+                    switch(msg.Type) {
+                        case "friendRequest":
+                            loadFriendRequests();
+                            break;
+                        case "acceptRequest":
+                            loadYourFriends();
+                            loadFriendRequests();
+                            break;
+                        default:
                     }
 
                 };
@@ -418,6 +441,31 @@
             
         }
 
+        function acceptFriendRequest(user_id) {
+
+            var url = "http://localhost:1212/accept-friend-request?token="+token;
+
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: {
+                    token: token,
+                    user_id: user_id
+                },
+                success: function(data, textStatus, xhr) {
+                    if (xhr.status != 200) {
+                        console.log(data.responseText);
+                    } else {
+                        console.log(textStatus);
+                    }
+                },
+                error: function(data, textStatus, xhr) {
+                    console.log(data.responseText);
+                }
+            });
+
+        }
+
         function loadYourHubs() {
 
             $("#your-hubs").empty();
@@ -462,10 +510,16 @@
                         console.log(data);
 
                         for (var d in data) {
-                            var friend = document.createElement('div');
-                            friend.className = "friend";
-                            friend.innerHTML = data[d].Username + ": " + data[d].ID;
-                            $("#your-friends").append(friend);
+
+                            var fr = $('<div/>', {
+                                class: 'friend',
+                            });
+                            
+                            fr.append(data[d].Username + ": " + data[d].ID);
+                            fr.data("username", data[d].Username);
+                            fr.data("id", data[d].ID);
+                            fr.appendTo('#your-friends');
+
                         }
                     }
                 },
@@ -490,10 +544,16 @@
                         data = JSON.parse(data);
 
                         for (var d in data) {
-                            var friend = document.createElement('div');
-                            friend.className = "friend-request";
-                            friend.innerHTML = data[d].Username + ": " + data[d].ID;
-                            $("#your-friend-requests").append(friend);
+
+                            var fr = $('<div/>', {
+                                class: 'friend-request',
+                            });
+                            
+                            fr.append(data[d].Username + ": " + data[d].ID);
+                            fr.data("username", data[d].Username);
+                            fr.data("id", data[d].ID);
+                            fr.appendTo('#your-friend-requests');
+
                         }
                     }
                 },

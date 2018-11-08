@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"encoding/json"
 	"net/http"
 )
@@ -217,7 +216,6 @@ func SendFriendRequest(w http.ResponseWriter, r *http.Request) {
 	n := &Notification{fu, "friendRequest"}
 	ok = n.Notify()
 	if !ok {
-		fmt.Println("recipient is not connected!")
 		u.ws.WriteJSON([]string{
 			"recipient is not connected!",
 		})
@@ -254,6 +252,24 @@ func AcceptFriendRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 5. Notify the accepting user
+	n1 := &Notification{u, "acceptRequest"}
+	ok = n1.Notify()
+	if !ok {
+		u.ws.WriteJSON([]string{
+			"user is not connected!",
+		})
+	}
+
+	// 6. Notify the requesting user
+	n2 := &Notification{fu, "acceptRequest"}
+	ok = n2.Notify()
+	if !ok {
+		u.ws.WriteJSON([]string{
+			"user is not connected!",
+		})
+	}
+
 }
 
 // DeclineFriendRequest : declines friend request from user with id
@@ -287,7 +303,6 @@ func DeclineFriendRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
-
 
 // GetMyFriendRequests : returns requesting user's friend requests
 func GetMyFriendRequests(w http.ResponseWriter, r *http.Request) {
