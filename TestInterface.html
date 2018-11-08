@@ -65,6 +65,12 @@
         <div id="your-friends"></div>
     </div>
 
+    <!-- Your friend requests -->
+    <div class="query">
+        <label>Your Friend Requests:</label> <br>
+        <div id="your-friend-requests"></div>
+    </div>
+
     <!-- TODO: Your friend requests -->
 
     <br>
@@ -135,6 +141,7 @@
         var ws = null;
         var hubSearchWS = null;
         var userSearchWS = null
+        var notificationWS = null;
 
         // form handlers
         $("#create-hub").submit(function(e) {
@@ -210,6 +217,9 @@
 
                         loadYourHubs();
                         loadYourFriends();
+                        loadFriendRequests();
+
+                        connectNotificationWebSocket();
                     }
                 },
                 error: function(data, textStatus, xhr) {
@@ -309,6 +319,41 @@
 
         }
 
+        function connectNotificationWebSocket() {
+            notificationWS = new WebSocket("ws://localhost:1212/ws/notifications?token="+token);
+
+            waitForSocketConnection(notificationWS, function() {
+
+                console.log("Connected to notifications websocket.");
+
+                notificationWS.onmessage = function (evt) {
+
+                    var messages = evt.data.split('\n');
+                    var msg = JSON.parse(messages[0]);
+                    console.log(msg.Type);
+
+                    if (msg.Type == "friendRequest") {
+                        loadFriendRequests();
+                    }                    
+
+                };
+
+            });
+        }
+
+        function sendNotification(user_id) {
+
+            if (notificationWS == null || notificationWS.readyState != notificationWS.OPEN) {
+                console.log('cannot send or receive notifications.');
+                connectNotificationWebSocket();
+            }
+
+            waitForSocketConnection(notificationWS, function() {
+                notificationWS.send(user_id);
+            });
+
+        }
+
 
         // websocket handlers
         $("#find-hubs").keydown(function(e) {
@@ -337,22 +382,35 @@
 
         })
 
+        $("#messagebox").keypress(function(e){
+            if (e.keyCode == 13) {
+                e.preventDefault();
+                sendMessage($(this).val());
+                $(this).val("");
+            }
+        });
+
         function sendFriendRequest() {
 
             var url = "http://localhost:1212/send-friend-request?token="+token;
+
+            var user_id = $("#friend-request").val();
+
             $.ajax({
                 type: 'POST',
                 url: url,
                 data: {
                     token: token,
-                    user_id: $("#friend-request").val()
+                    user_id: user_id
                 },
                 success: function(data, textStatus, xhr) {
                     if (xhr.status != 200) {
                         console.log(data.responseText);
                     } else {
-                        // js = JSON.parse(data);
                         console.log(textStatus);
+
+                        // send notification
+                        sendNotification(user_id);
                     }
                 },
                 error: function(data, textStatus, xhr) {
@@ -420,13 +478,34 @@
 
         }
 
-        $("#messagebox").keypress(function(e){
-            if (e.keyCode == 13) {
-                e.preventDefault();
-                sendMessage($(this).val());
-                $(this).val("");
-            }
-        });
+        function loadFriendRequests() {
+
+            $("#your-friend-requests").empty();
+
+            $.ajax({
+                type: 'GET',
+                url: "http://localhost:1212/my-friend-requests?token="+token,
+                success: function(data, textStatus, xhr) {
+                    if (xhr.status != 200) {
+                        console.log(data.responseText);
+                    } else {
+                        data = JSON.parse(data);
+
+                        for (var d in data) {
+                            var friend = document.createElement('div');
+                            friend.className = "friend-request";
+                            friend.innerHTML = data[d].Username + ": " + data[d].ID;
+                            $("#your-friend-requests").append(friend);
+                        }
+                    }
+                },
+                error: function(data, textStatus, xhr) {
+                    console.log(data.responseText);
+                }
+            });
+
+        }
+
 
         function sendMessage(msg){
 

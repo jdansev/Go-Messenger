@@ -276,3 +276,27 @@ func DeclineFriendRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+
+// GetMyFriendRequests : returns requesting user's friend requests
+func GetMyFriendRequests(w http.ResponseWriter, r *http.Request) {
+
+	var tok string
+	var ok bool
+	var u *User
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// 1. Validate token from url
+	if tok, ok = validateURLToken(w, r); !ok {
+		return
+	}
+
+	// 2. Get the user's profile
+	if u, ok = validateUserFromToken(tok, w); !ok {
+		return
+	}
+
+	// 3. Return user friend requests
+	json.NewEncoder(w).Encode(u.Requests)
+}

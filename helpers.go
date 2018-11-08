@@ -178,6 +178,7 @@ func createUser(username, password string) *User {
 		[]*Friend{},
 		[]*Friend{},
 		[]*JoinedHubs{},
+		nil,
 	}
 	addUser(u)
 	return u

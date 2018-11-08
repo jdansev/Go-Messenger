@@ -70,12 +70,14 @@ func ConnectionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ws, err := upgrader.Upgrade(w, r, nil)
+	fmt.Println(ws)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer ws.Close()
 	h.clients[ws] = true
+	u.ws = ws
 
 	for {
 		var msg Message
@@ -84,6 +86,7 @@ func ConnectionHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Printf("error: %v", err)
 			delete(h.clients, ws)
+			u.ws = nil
 			break
 		}
 
@@ -175,4 +178,85 @@ func FuzzyFindUsers(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+}
+
+// Notifications : basic echo socket with json
+func Notifications(w http.ResponseWriter, r *http.Request) {
+
+	var tok string
+	var ok bool
+	var u *User
+	var recipient *User
+
+	// 1. Validate token from url
+	if tok, ok = validateURLToken(w, r); !ok {
+		return
+	}
+
+	// 2. Get the user's profile
+	if u, ok = validateUserFromToken(tok, w); !ok {
+		return
+	}
+
+	// 4. upgrade http to websocket
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}
+
+	// 5. set user's notification socket
+	u.ws = ws
+
+	defer ws.Close()
+
+	// Begin notification handler for this user
+	for {
+
+		_, rid, err := ws.ReadMessage()
+		if err != nil {
+			log.Println("read:", err)
+			break
+		}
+
+		// 6. Get the recipient's profile
+		if recipient = findUserByID(string(rid)); recipient == nil || recipient == u {
+
+			ws.WriteJSON([]string{
+				"recipient not valid!",
+			})
+
+		} else {
+
+			// 7. Send the notification
+			n := &Notification{recipient, "friendRequest"}
+			ok := n.Notify()
+
+			if !ok {
+				ws.WriteJSON([]string{
+					"recipient is not connected!",
+				})
+			}
+
+		}
+
+	}
+}
+
+// Notify : relays a notification to a specific user
+func (n *Notification) Notify() bool {
+	var err error
+
+	notification := map[string]string{
+		"Type": n.Type,
+	}
+
+	if n.Recipient.ws == nil {
+		fmt.Println("user has no notifications socket")
+		return false
+	}
+
+	err = n.Recipient.ws.WriteJSON(notification)
+
+	return err == nil
 }

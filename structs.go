@@ -10,6 +10,8 @@ type User struct {
 	Friends  []*Friend
 	Requests []*Friend
 	Hubs     []*JoinedHubs
+
+	ws *websocket.Conn // notifications websocket
 }
 
 // JoinedHubs : hubs a user has joined
@@ -45,4 +47,10 @@ type Member struct {
 type Message struct {
 	Sender  string
 	Message string
+}
+
+// Notification : holds notification data
+type Notification struct {
+	Recipient *User
+	Type      string
 }
