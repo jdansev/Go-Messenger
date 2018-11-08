@@ -32,6 +32,12 @@
 
     <br>
 
+    <button onclick="nukeServer()">Nuke Server</button>
+    <button onclick="registerUser('asdf','asdf')">Register/Login User 1</button>
+    <button onclick="registerUser('qwer','qwer')">Register/Login User 2</button>
+    <button onclick="loginUser('asdf','asdf')">Login User 1</button>
+    <button onclick="loginUser('qwer','qwer')">Login User 2</button>
+
     <!-- Registration -->
     <form style="width:500px" class="query" id="registration" method="POST" action="http://localhost:1212/register">
         <label>Username</label> <input name="username" type="text" value="" />
@@ -154,6 +160,117 @@
         var userSearchWS = null
         var notificationWS = null;
 
+        // test functions
+        function nukeServer() {
+
+            $.ajax({
+                type: 'GET',
+                url: "http://localhost:1212/nuke",
+                success: function(data, textStatus, xhr) {
+                    if (xhr.status != 200) {
+                        console.log(data.responseText);
+                    } else {
+                        console.log(textStatus);
+                    }
+                },
+                error: function(data, textStatus, xhr) {
+                    console.log(data.responseText);
+                }
+            });
+
+        }
+
+        function loginUser(n, p) {
+
+            $.ajax({
+                type: 'POST',
+                url: 'http://localhost:1212/login',
+                data: {
+                    username: n,
+                    password: p,
+                },
+                success: function(data, textStatus, xhr) {
+                    if (xhr.status != 200) {
+                        console.log(data.responseText);
+                    } else {
+                        console.log(data);
+                        email = data.email;
+                        token = data.token;
+                        uuid = data.uuid;
+
+                        $("#token").empty();
+                        $("#token").append(token);
+
+                        loadYourHubs();
+                        loadYourFriends();
+                        loadFriendRequests();
+
+                        connectNotificationWebSocket();
+                    }
+                },
+                error: function(data, textStatus, xhr) {
+                    console.log(data.responseText);
+                }
+            });
+
+        }
+
+        function registerUser(n, p) {
+            $.ajax({
+                type: 'POST',
+                url: 'http://localhost:1212/register',
+                data: {
+                    username: n,
+                    password: p,
+                },
+                success: function(data, textStatus, xhr) {
+                    if (xhr.status != 200) {
+                        console.log(data.responseText);
+                    } else {
+                        var js = JSON.parse(data);
+                        console.log(js);
+
+                        $.ajax({
+                            type: 'POST',
+                            url: 'http://localhost:1212/login',
+                            data: {
+                                username: n,
+                                password: p,
+                            },
+                            success: function(data, textStatus, xhr) {
+                                if (xhr.status != 200) {
+                                    console.log(data.responseText);
+                                } else {
+                                    console.log(data);
+                                    email = data.email;
+                                    token = data.token;
+                                    uuid = data.uuid;
+                                    $("#token").append(token);
+
+                                    loadYourHubs();
+                                    loadYourFriends();
+                                    loadFriendRequests();
+
+                                    connectNotificationWebSocket();
+                                }
+                            },
+                            error: function(data, textStatus, xhr) {
+                                console.log(data.responseText);
+                            }
+                        });
+
+                    }
+
+                },
+                error: function(data, textStatus, xhr) {
+                    console.log(data.responseText);
+                }
+            });
+            
+
+        }
+
+
         // form handlers
         $("#create-hub").submit(function(e) {
             var form = $(this);
@@ -240,6 +357,7 @@
             return false;
         });
 
+        // TODO: make this a button instead
         $(document).on('click', '.friend-request', function() {
             console.log('clicked');
             acceptFriendRequest($(this).data("id"));

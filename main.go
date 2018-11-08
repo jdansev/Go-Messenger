@@ -18,6 +18,9 @@ func main() {
 
 	addTestHubs()
 
+	// test APIs
+	router.HandleFunc("/nuke", NukeServer).Methods("GET")
+
 	// public queries
 	router.HandleFunc("/hubs", GetHubs).Methods("GET")
 	router.HandleFunc("/hubs/{hub_id}", GetHub).Methods("GET")

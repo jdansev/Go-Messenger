@@ -32,6 +32,14 @@ func runHubTests(h *Hub) {
 
 }
 
+// NukeServer : deletes all existing users and hubs and repopulates test data
+func NukeServer(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	
+	nukeServerData()
+}
+
 // GetUser : returns a user from an id
 func GetUser(w http.ResponseWriter, r *http.Request) {
 

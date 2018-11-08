@@ -11,6 +11,12 @@ import (
 
 // GLOBAL helpers
 
+func nukeServerData() {
+	users = []*User{}
+	hubs = []*Hub{}
+	addTestHubs()
+}
+
 func addHub(h *Hub) {
 	hubs = append(hubs, h)
 }
