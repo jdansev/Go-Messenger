@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"encoding/json"
 	"net/http"
 )
@@ -208,8 +209,18 @@ func SendFriendRequest(w http.ResponseWriter, r *http.Request) {
 
 	// 4. Send the friend request
 	if ok = u.sendFriendRequestTo(fu); !ok {
-		http.Error(w, "400 - already friends!", http.StatusBadRequest)
+		http.Error(w, "400 - cannot do that!", http.StatusBadRequest)
 		return
+	}
+
+	// 5. Send the notification
+	n := &Notification{fu, "friendRequest"}
+	ok = n.Notify()
+	if !ok {
+		fmt.Println("recipient is not connected!")
+		u.ws.WriteJSON([]string{
+			"recipient is not connected!",
+		})
 	}
 }
 

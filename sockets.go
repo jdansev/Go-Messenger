@@ -186,7 +186,7 @@ func Notifications(w http.ResponseWriter, r *http.Request) {
 	var tok string
 	var ok bool
 	var u *User
-	var recipient *User
+	// var recipient *User
 
 	// 1. Validate token from url
 	if tok, ok = validateURLToken(w, r); !ok {
@@ -205,39 +205,19 @@ func Notifications(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	defer ws.Close()
+
 	// 5. set user's notification socket
 	u.ws = ws
-
-	defer ws.Close()
 
 	// Begin notification handler for this user
 	for {
 
-		_, rid, err := ws.ReadMessage()
-		if err != nil {
-			log.Println("read:", err)
+		// detect when user breaks socket connection
+		if _, _, err := ws.ReadMessage(); err != nil {
+			log.Printf("error: %v", err)
+			u.ws = nil
 			break
-		}
-
-		// 6. Get the recipient's profile
-		if recipient = findUserByID(string(rid)); recipient == nil || recipient == u {
-
-			ws.WriteJSON([]string{
-				"recipient not valid!",
-			})
-
-		} else {
-
-			// 7. Send the notification
-			n := &Notification{recipient, "friendRequest"}
-			ok := n.Notify()
-
-			if !ok {
-				ws.WriteJSON([]string{
-					"recipient is not connected!",
-				})
-			}
-
 		}
 
 	}

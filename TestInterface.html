@@ -65,13 +65,13 @@
         <div id="your-friends"></div>
     </div>
 
+    <br>
+
     <!-- Your friend requests -->
     <div class="query">
         <label>Your Friend Requests:</label> <br>
         <div id="your-friend-requests"></div>
     </div>
-
-    <!-- TODO: Your friend requests -->
 
     <br>
 
@@ -138,6 +138,7 @@
         var uuid;
 
         // web sockets
+        // TODO: reduce this to maybe two sockets only
         var ws = null;
         var hubSearchWS = null;
         var userSearchWS = null
@@ -330,11 +331,11 @@
 
                     var messages = evt.data.split('\n');
                     var msg = JSON.parse(messages[0]);
-                    console.log(msg.Type);
+                    console.log(msg);
 
                     if (msg.Type == "friendRequest") {
                         loadFriendRequests();
-                    }                    
+                    }
 
                 };
 
@@ -408,9 +409,6 @@
                         console.log(data.responseText);
                     } else {
                         console.log(textStatus);
-
-                        // send notification
-                        sendNotification(user_id);
                     }
                 },
                 error: function(data, textStatus, xhr) {
