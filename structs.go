@@ -17,6 +17,7 @@ type User struct {
 // JoinedHubs : hubs a user has joined
 type JoinedHubs struct {
 	ID string
+	Visibility string
 }
 
 // Friend : ID in friend list

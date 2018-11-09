@@ -282,7 +282,7 @@ func (u *User) createHub(id, vis string) *Hub {
 }
 
 func (u *User) joinHub(h *Hub) {
-	u.Hubs = append(u.Hubs, &JoinedHubs{h.ID})
+	u.Hubs = append(u.Hubs, &JoinedHubs{h.ID, h.Visibility})
 }
 
 func (u *User) leaveHub(h *Hub) bool {

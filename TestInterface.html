@@ -44,7 +44,7 @@
     <form style="width:500px" class="query" id="registration" method="POST" action="http://localhost:1212/register">
         <label>Username</label> <input name="username" type="text" value="" />
         <label>Password</label> <input name="password" type="password" value="" />
-        <input type="submit" value="Register" />
+        <button type="submit" value="Register">Register</button>
     </form>
 
     <br>
@@ -53,7 +53,7 @@
     <form style="width:500px" class="query" id="login" method="POST" action="http://localhost:1212/login">
         <label>Username</label><input name="username" type="text" value="" />
         <label>Password</label><input name="password" type="password" value="" />
-        <input type="submit" value="Login" />
+        <button type="submit" value="Login">Login</button>
     </form>
 
     <br>
@@ -74,7 +74,6 @@
 
     <textarea class="query" id="messagebox" cols="30" rows="10" placeholder="Type a message"></textarea>
 
-    <br>
     <br>
 
      <!-- Send friend request -->
@@ -148,15 +147,6 @@
 
     <br>
 
-    <!-- Join a hub -->
-    <div class="query">
-        <label>Join a Hub:</label> <br>
-        <input id="hubid" type="text" placeholder="Hub ID"/>
-        <button onclick="beginWebsocket()">Join</button>
-    </div>
-
-    <br>
-
     <br>
 
 
@@ -196,6 +186,9 @@
             if (notificationWS != null && notificationWS.readyState !== notificationWS.CLOSED) {
                 notificationWS.close();
             }
+
+            // clear all input fields
+            $('input:not(:radio)').val("");
         }
 
         // test functions
@@ -341,7 +334,6 @@
         // form handlers
         $("#create-hub").submit(function(e) {
             var visibility = $('input[name=hub-visibility]:checked').val();
-            console.log(visibility);
             var form = $(this);
             var url = form.attr('action') + "?token=" + token;
             e.stopPropagation();
@@ -441,15 +433,11 @@
             return false;
         });
 
-
-        // web socket connections
-        function beginWebsocket() {
+        function joinHub(hub_id) {
 
             if (ws != null) ws.close();
 
-            var hubID = $('#hubid').val();
-
-            ws = new WebSocket("ws://localhost:1212/ws?token="+token+"&hub="+hubID);
+            ws = new WebSocket("ws://localhost:1212/ws?token="+token+"&hub="+hub_id);
             waitForSocketConnection(ws, function() {
                 console.log("Connected.");
 
@@ -466,6 +454,7 @@
                 };
 
             });
+
         }
 
         function connectUserSearchWebsocket() {
@@ -517,10 +506,23 @@
                         $("#hub-matches").empty();
 
                         for (var r in results) {
-                            var match = document.createElement('div');
-                            match.className = "hub-match";
-                            match.innerHTML = results[r].ID;
-                            $("#hub-matches").append(match);
+
+                            var match = $('<div/>', {
+                                class: 'hub-match',
+                            });
+                            match.append(results[r].ID + " (" + results[r].Visibility + ")");
+                            match.appendTo($("#hub-matches"));
+
+
+                            var joinBtn = $('<button/>', {
+                                class: 'join-hub',
+                            });
+                            joinBtn.append("join");
+                            joinBtn.on('click', function() {
+                                joinHub(results[r].ID);
+                            });
+                            joinBtn.appendTo(match);
+
                         }
 
                     } else {
@@ -691,11 +693,28 @@
 
                         $("#your-hubs").empty();
 
+                        console.log(data);
+
                         for (var d in data) {
-                            var hub = document.createElement('div');
-                            hub.className = "hub";
-                            hub.innerHTML = data[d].ID;
-                            $("#your-hubs").append(hub);
+
+                            var hub = $('<div/>', {
+                                class: 'hub',
+                            });
+                            
+                            hub.append(data[d].ID + " (" + data[d].Visibility + ")");
+                            hub.data("id", data[d].ID);
+                            hub.appendTo('#your-hubs');
+
+                            var joinBtn = $('<button/>', {
+                                class: 'join-hub',
+                            });
+                            joinBtn.append("join");
+                            joinBtn.on('click', function() { // only works when passed through a function for some reason
+                                joinHub(data[d].ID);
+                            });
+                            joinBtn.appendTo(hub);
+
+
                         }
                     }
                 },
@@ -718,8 +737,6 @@
                         console.log(data.responseText);
                     } else {
                         data = JSON.parse(data);
-
-                        console.log(data);
 
                         for (var d in data) {
 
@@ -795,7 +812,6 @@
             });
 
         }
-
 
         function sendMessage(msg){
 
