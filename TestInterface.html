@@ -20,11 +20,13 @@
         .friend-request {
             cursor: pointer;
             border: 1px solid #000;
+            padding: 5px;
         }
 
         .friend {
             cursor: pointer;
             border: 1px solid #000;
+            padding: 5px;
         }
     </style>
 </head>
@@ -73,15 +75,6 @@
     <br>
 
     <textarea class="query" id="messagebox" cols="30" rows="10" placeholder="Type a message"></textarea>
-
-    <br>
-
-     <!-- Send friend request -->
-     <div class="query">
-        <label>Send friend request:</label> <br>
-        <input id="friend-request" type="text" placeholder="User ID"/>
-        <button onclick="sendFriendRequest()">Send Request</button>
-    </div>
 
     <br>
 
@@ -189,6 +182,9 @@
 
             // clear all input fields
             $('input:not(:radio)').val("");
+
+            $('#hub-matches').empty();
+            $('#user-matches').empty();
         }
 
         // test functions
@@ -474,11 +470,24 @@
                         $("#user-matches").empty();
 
                         for (var r in results) {
-                            var match = document.createElement('div');
-                            match.className = "user-match";
-                            var user = results[r]
-                            match.innerHTML = user.Username + ": " + user.ID;
-                            $("#user-matches").append(match);
+
+                            var match = $('<div/>', {
+                                class: 'user-match',
+                            });
+                            match.append(results[r].Username);
+                            match.appendTo($("#user-matches"));
+
+
+                            var addFriendBtn = $('<button/>', {
+                                class: 'add-friend',
+                            });
+                            addFriendBtn.append("add friend");
+                            addFriendBtn.on('click', function() {
+                                console.log(results[r].ID);
+                                sendFriendRequest(results[r].ID);
+
+                            });
+                            addFriendBtn.appendTo(match);
                         }
 
                     } else {
@@ -602,11 +611,11 @@
             }
         });
 
-        function sendFriendRequest() {
+        function sendFriendRequest(user_id) {
 
             var url = "http://localhost:1212/send-friend-request?token="+token;
 
-            var user_id = $("#friend-request").val();
+            // var user_id = $("#friend-request").val();
 
             $.ajax({
                 type: 'POST',
@@ -744,7 +753,7 @@
                                 class: 'friend',
                             });
                             
-                            fr.append(data[d].Username + ": " + data[d].ID);
+                            fr.append(data[d].Username);
                             fr.data("username", data[d].Username);
                             fr.data("id", data[d].ID);
                             fr.appendTo('#your-friends');
@@ -778,7 +787,7 @@
                                 class: 'friend-request',
                             });
                             
-                            fr.append(data[d].Username + ": " + data[d].ID);
+                            fr.append(data[d].Username);
                             fr.data("username", data[d].Username);
                             fr.data("id", data[d].ID);
                             fr.appendTo('#your-friend-requests');
@@ -812,6 +821,7 @@
             });
 
         }
+
 
         function sendMessage(msg){
 
