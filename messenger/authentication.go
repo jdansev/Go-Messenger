@@ -61,7 +61,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(pwd))
+	err := bcrypt.CompareHashAndPassword([]byte(u.password), []byte(pwd))
 	if err != nil {
 		http.Error(w, "403 - password doesn't match!", http.StatusForbidden)
 		return
@@ -71,8 +71,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	js, _ := json.Marshal(map[string]string{
 		"username": u.Username,
-		"id": u.ID,
-		"token": token,
+		"id":       u.ID,
+		"token":    token,
 	})
 
 	w.Header().Set("Content-Type", "application/json")

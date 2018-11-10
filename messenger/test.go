@@ -10,17 +10,31 @@ import (
 func addTestHubs() {
 
 	// Manual creation of hubs
+
 	createTestUsers()
 
-	h := createHub("hub1", "private")
-	h.addTestUsersToHub()
-	h.addTestMessagesToHub()
+	// h := createHub("hub1", "private")
 
-	addHub(h)
+	// h.addTestUsersToHub()
+
+	// h.addTestMessagesToHub()
+
+	// addHub(h)
 
 	// user creation of hubs
-	h2 := p1.createHub("p1s-hub", "public")
-	go h2.MessageHandler()
+
+	h2 := p1.createHub("p1-private-hub", "private")
+
+	p3.sendJoinRequest(h2)
+
+	p2.sendJoinRequest(h2)
+
+	h2.acceptJoinRequest(p1, p2)
+	h2.acceptJoinRequest(p1, p3)
+
+	h2.grantAdmin(p2, p3)
+	h2.grantAdmin(p1, p2)
+
 	// p1.leaveHub(h2)
 
 }
@@ -48,6 +62,8 @@ func createTestUsers() {
 
 	p2.acceptFriendRequest(p3)
 
+
+
 }
 
 func (h *Hub) addTestUsersToHub() {
@@ -57,9 +73,9 @@ func (h *Hub) addTestUsersToHub() {
 }
 
 func (h *Hub) addTestMessagesToHub() {
-	h.Messages = append(h.Messages, &Message{"1", "hey there", "one", []*UserTag{}})
-	h.Messages = append(h.Messages, &Message{"2", "whats up", "two", []*UserTag{}})
-	h.Messages = append(h.Messages, &Message{"3", "how's it going", "three", []*UserTag{}})
+	h.Messages = append(h.Messages, &Message{"1", "hey there", "one"})
+	h.Messages = append(h.Messages, &Message{"2", "whats up", "two"})
+	h.Messages = append(h.Messages, &Message{"3", "how's it going", "three"})
 }
 
 var count = 1

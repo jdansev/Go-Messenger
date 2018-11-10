@@ -25,6 +25,7 @@ func main() {
 	router.HandleFunc("/hubs", GetHubs).Methods("GET")
 	router.HandleFunc("/hubs/{hub_id}", GetHub).Methods("GET")
 
+	router.HandleFunc("/users", GetUsers).Methods("GET")
 	router.HandleFunc("/users/{user_id}", GetUser).Methods("GET")
 	router.HandleFunc("/users/{user_id}/hubs", GetUserHubs).Methods("GET")
 	router.HandleFunc("/users/{user_id}/friends", GetUserFriends).Methods("GET")

@@ -71,9 +71,7 @@ func ConnectionHandler(w http.ResponseWriter, r *http.Request) {
 	h.joinUser(u)
 	fmt.Println("hub exists, adding new user to it")
 
-
 	ws, err := upgrader.Upgrade(w, r, nil)
-	fmt.Println(ws)
 
 	if err != nil {
 		log.Fatal(err)
