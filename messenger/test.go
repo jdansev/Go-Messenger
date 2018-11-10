@@ -9,19 +9,8 @@ import (
 // TEST helpers
 func addTestHubs() {
 
-	// Manual creation of hubs
-
 	createTestUsers()
 
-	// h := createHub("hub1", "private")
-
-	// h.addTestUsersToHub()
-
-	// h.addTestMessagesToHub()
-
-	// addHub(h)
-
-	// user creation of hubs
 
 	h2 := p1.createHub("p1-private-hub", "private")
 
@@ -30,12 +19,12 @@ func addTestHubs() {
 	p2.sendJoinRequest(h2)
 
 	h2.acceptJoinRequest(p1, p2)
-	h2.acceptJoinRequest(p1, p3)
+	h2.declineJoinRequest(p1, p3)
 
 	h2.grantAdmin(p2, p3)
 	h2.grantAdmin(p1, p2)
 
-	// p1.leaveHub(h2)
+	h2.unjoinUser(p1)
 
 }
 
