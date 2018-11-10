@@ -65,7 +65,7 @@ func getUserFromToken(t string) *User {
 
 // MEMBER helpers
 
-func (m *Member) setAdmin(a bool) {
+func (m *HubMember) setAdmin(a bool) {
 	m.IsAdmin = a
 }
 
@@ -84,18 +84,18 @@ func removeHub(h *Hub) bool {
 
 func createHub(id, vis string) *Hub {
 	h := &Hub{
-		ID:        id,
+		ID:         id,
 		Visibility: vis,
-		broadcast: make(chan Message),
-		clients:   make(map[*websocket.Conn]bool),
-		Members:   []*Member{},
-		Messages:  []*Message{},
+		broadcast:  make(chan Message),
+		clients:    make(map[*websocket.Conn]bool),
+		Members:    []*HubMember{},
+		Messages:   []*Message{},
 	}
 	go h.MessageHandler()
 	return h
 }
 
-func (j *JoinedHubs) getJoinedHub() *Hub {
+func (j *HubTag) getJoinedHub() *Hub {
 	for _, h := range hubs {
 		if j.ID == h.ID {
 			return h
@@ -144,7 +144,7 @@ func (h *Hub) setAdmin(u *User, isAdmin bool) bool {
 }
 
 func (h *Hub) addUserToHub(p *User) {
-	h.Members = append(h.Members, &Member{p, false})
+	h.Members = append(h.Members, &HubMember{p, false})
 }
 
 func (h *Hub) removeUserFromHub(p *User) bool {
@@ -164,7 +164,7 @@ func (h *Hub) recordMessage(m *Message) {
 }
 
 // FRIEND helpers
-func (f *Friend) getFriendUser() *User {
+func (f *UserTag) getFriendUser() *User {
 	for _, u := range users {
 		if f.ID == u.ID {
 			return u
@@ -182,9 +182,9 @@ func createUser(username, password string) *User {
 		uid.String(),
 		username,
 		string(passwordHash),
-		[]*Friend{},
-		[]*Friend{},
-		[]*JoinedHubs{},
+		[]*UserTag{},
+		[]*UserTag{},
+		[]*HubTag{},
 		nil,
 	}
 	addUser(u)
@@ -192,7 +192,7 @@ func createUser(username, password string) *User {
 }
 
 func (u *User) hasRequested(f *User) bool {
-	for _, friend := range f.Requests {
+	for _, friend := range f.FriendRequests {
 		if friend.ID == u.ID {
 			return true
 		}
@@ -205,8 +205,8 @@ func (u *User) sendFriendRequestTo(f *User) bool {
 	if u.isFriendsWith(f) || u.hasRequested(f) {
 		return false // already friends or already requested
 	}
-	request := &Friend{u.ID, u.Username}
-	f.Requests = append(f.Requests, request)
+	request := &UserTag{u.ID, u.Username}
+	f.FriendRequests = append(f.FriendRequests, request)
 	return true
 }
 
@@ -229,11 +229,11 @@ func (u *User) declineFriendRequest(f *User) bool {
 }
 
 func (u *User) removeFriendRequest(f *User) bool {
-	r := u.Requests
+	r := u.FriendRequests
 	for i, friend := range r {
 		if f.ID == friend.ID {
 			*r[i] = *r[len(r)-1]
-			u.Requests = r[:len(r)-1]
+			u.FriendRequests = r[:len(r)-1]
 			return true
 		}
 	}
@@ -255,10 +255,10 @@ func (u *User) addFriend(f *User) {
 	if u.isFriendsWith(f) || u == f {
 		return
 	}
-	u.Friends = append(u.Friends, &Friend{f.ID, f.Username})
+	u.Friends = append(u.Friends, &UserTag{f.ID, f.Username})
 }
 
-func (u *User) removeFriend(f *Friend) bool {
+func (u *User) removeFriend(f *UserTag) bool {
 	m := u.Friends
 	for i, friend := range m {
 		if f == friend {
@@ -282,7 +282,7 @@ func (u *User) createHub(id, vis string) *Hub {
 }
 
 func (u *User) joinHub(h *Hub) {
-	u.Hubs = append(u.Hubs, &JoinedHubs{h.ID, h.Visibility})
+	u.Hubs = append(u.Hubs, &HubTag{h.ID, h.Visibility})
 }
 
 func (u *User) leaveHub(h *Hub) bool {

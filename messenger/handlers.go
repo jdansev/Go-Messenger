@@ -341,5 +341,5 @@ func GetMyFriendRequests(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 3. Return user friend requests
-	json.NewEncoder(w).Encode(u.Requests)
+	json.NewEncoder(w).Encode(u.FriendRequests)
 }

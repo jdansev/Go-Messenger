@@ -149,7 +149,6 @@
         var username;
         var uuid;
         var token;
-        var email; // not used
 
         // web sockets
         // TODO: reduce this to maybe two sockets only
@@ -256,7 +255,7 @@
 
         function registerUser(n, p) {
 
-            // Reigistration
+            // Registration
 
             $.ajax({
                 type: 'POST',
@@ -615,8 +614,6 @@
 
             var url = "http://localhost:1212/send-friend-request?token="+token;
 
-            // var user_id = $("#friend-request").val();
-
             $.ajax({
                 type: 'POST',
                 url: url,
@@ -832,8 +829,9 @@
 
             waitForSocketConnection(ws, function() {
                 ws.send(JSON.stringify({
-                    sender: uuid,
-                    message: msg
+                    ID: uuid,
+                    Username: username,
+                    Message: msg
                 }));
             });
 

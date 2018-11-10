@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"time"
 	"strconv"
+	"time"
 )
 
 // TEST helpers
@@ -48,7 +48,6 @@ func createTestUsers() {
 
 	p2.acceptFriendRequest(p3)
 
-	
 }
 
 func (h *Hub) addTestUsersToHub() {
@@ -58,17 +57,16 @@ func (h *Hub) addTestUsersToHub() {
 }
 
 func (h *Hub) addTestMessagesToHub() {
-	h.Messages = append(h.Messages, &Message{"1","hey there"})
-	h.Messages = append(h.Messages, &Message{"2","whats up"})
-	h.Messages = append(h.Messages, &Message{"3","how's it going"})
+	h.Messages = append(h.Messages, &Message{"1", "hey there", "one", []*UserTag{}})
+	h.Messages = append(h.Messages, &Message{"2", "whats up", "two", []*UserTag{}})
+	h.Messages = append(h.Messages, &Message{"3", "how's it going", "three", []*UserTag{}})
 }
-
 
 var count = 1
 
 func registerTestUserLoop() {
 	for {
-		createUser("new-user-" + strconv.Itoa(count), "my-secret-key")
+		createUser("new-user-"+strconv.Itoa(count), "my-secret-key")
 		fmt.Printf("created new user, %d\n", count)
 		count++
 		time.Sleep(2 * time.Second)

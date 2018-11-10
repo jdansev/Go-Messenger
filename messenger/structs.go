@@ -4,24 +4,24 @@ import "github.com/gorilla/websocket"
 
 // User : a user
 type User struct {
-	ID       string
-	Username string
-	Password string
-	Friends  []*Friend
-	Requests []*Friend
-	Hubs     []*JoinedHubs
+	ID             string
+	Username       string
+	Password       string
+	Friends        []*UserTag
+	FriendRequests []*UserTag
+	Hubs           []*HubTag
 
 	ws *websocket.Conn // notifications websocket
 }
 
-// JoinedHubs : hubs a user has joined
-type JoinedHubs struct {
-	ID string
+// HubTag : hubs a user has joined
+type HubTag struct {
+	ID         string
 	Visibility string
 }
 
-// Friend : ID in friend list
-type Friend struct {
+// UserTag : ID in friend list
+type UserTag struct {
 	ID       string
 	Username string
 }
@@ -30,23 +30,25 @@ type Friend struct {
 type Hub struct {
 	ID         string
 	Visibility string
-	Members    []*Member
+	Members    []*HubMember
 	Messages   []*Message
 
 	clients   map[*websocket.Conn]bool
 	broadcast chan Message
 }
 
-// Member : of a Hub
-type Member struct {
+// HubMember : of a Hub
+type HubMember struct {
 	Member  *User
 	IsAdmin bool
 }
 
 // Message : message struct
 type Message struct {
-	Sender  string
-	Message string
+	ID           string
+	Username     string
+	Message      string
+	JoinRequests []*UserTag
 }
 
 // Notification : holds notification data
