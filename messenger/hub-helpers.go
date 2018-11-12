@@ -30,7 +30,7 @@ func (h *Hub) sendJoinInvitation(a, b *User) bool {
 		return false
 	}
 
-	// b has not yet requested (for private hub)
+	// b has already made a request to join (for private hub)
 	if h.hasJoinRequestFrom(b) {
 		return false
 	}

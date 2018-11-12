@@ -226,7 +226,12 @@ func SendFriendRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 5. Send the notification
-	n := &Notification{fu, "friendRequest"}
+	n := &Notification{
+		fu,
+		"friendRequestReceived",
+		UserTag{u.ID, u.Username},
+	}
+
 	ok = n.Notify()
 	if !ok {
 		u.ws.WriteJSON([]string{
@@ -266,7 +271,11 @@ func AcceptFriendRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 5. Notify the accepting user
-	n1 := &Notification{u, "acceptRequest"}
+	n1 := &Notification{
+		u,
+		"youAcceptedFriendRequest",
+		UserTag{fu.ID, fu.Username},
+	}
 	ok = n1.Notify()
 	if !ok {
 		u.ws.WriteJSON([]string{
@@ -275,7 +284,12 @@ func AcceptFriendRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 6. Notify the requesting user
-	n2 := &Notification{fu, "acceptRequest"}
+	n2 := &Notification{
+		fu,
+		"requestAccepted",
+		UserTag{u.ID, u.Username},
+	}
+	fmt.Println(n2)
 	ok = n2.Notify()
 	if !ok {
 		u.ws.WriteJSON([]string{
@@ -316,7 +330,11 @@ func DeclineFriendRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 6. Notify the declining user
-	n := &Notification{u, "declineRequest"}
+	n := &Notification{
+		u,
+		"youDeclinedFriendRequest",
+		UserTag{fu.ID, fu.Username},
+	}
 	n.Notify()
 
 }

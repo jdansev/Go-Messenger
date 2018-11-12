@@ -557,14 +557,16 @@
 
 
                     switch(msg.Type) {
-                        case "friendRequest":
+                        case "friendRequestReceived":
                             loadFriendRequests();
                             break;
-                        case "acceptRequest":
+                        case "youAcceptedFriendRequest":
                             loadYourFriends();
                             loadFriendRequests();
                             break;
-                        case "declineRequest":
+                        case "requestAccepted":
+                            loadYourFriends();
+                        case "youDeclinedFriendRequest":
                             loadFriendRequests();
                         default:
                     }

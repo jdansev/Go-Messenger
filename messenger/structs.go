@@ -38,7 +38,7 @@ type Hub struct {
 
 // HubInvitation : an invitation to join a hub
 type HubInvitation struct {
-	Hub HubTag
+	Hub  HubTag
 	From UserTag
 }
 
@@ -74,12 +74,13 @@ type Message struct {
 	// Sender UserTag
 	ID       string
 	Username string
-	Message string
+	Message  string
 }
 
 // Notification : holds notification data
 type Notification struct {
 	// Sender *UserTag
-	Recipient *User
+	recipient *User
 	Type      string
+	Body      interface{}
 }
