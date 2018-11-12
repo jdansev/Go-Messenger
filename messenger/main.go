@@ -8,9 +8,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var users = []*User{}
-var hubs = []*Hub{}
-
 func main() {
 	fmt.Println("started server on port :1212")
 

@@ -2,7 +2,9 @@ package main
 
 import "github.com/gorilla/websocket"
 
-// HUB Tag helpers
+
+/* HUB Tag helpers */
+
 func (ht *HubTag) getHubFromTag() *Hub {
 	for _, h := range hubs {
 		if h.ID == ht.ID {
@@ -12,16 +14,49 @@ func (ht *HubTag) getHubFromTag() *Hub {
 	return nil
 }
 
-// HUB helpers
+
+/* HUB helpers */
+
+func (h *Hub) sendJoinInvitation(a, b *User) bool {
+	// can send join invitations for public, private, or secret hubs
+
+	// if a is member of h and b is not a member of h
+	if !a.isMemberOf(h) || b.isMemberOf(h) {
+		return false
+	}
+
+	// a must be an admin
+	if !h.getHubMemberFromUser(a).IsAdmin {
+		return false
+	}
+
+	// b has not yet requested (for private hub)
+	if h.hasJoinRequestFrom(b) {
+		return false
+	}
+
+	// b has not yet been invited yet
+	if b.hasJoinInviteFrom(h) {
+		return false
+	}
+
+	b.JoinInvitations = append(b.JoinInvitations, 
+		&HubInvitation{
+			HubTag{h.ID, h.Visibility},
+			UserTag{a.ID, a.Username},
+		},
+	)
+	return true
+}
 
 func (h *Hub) grantAdmin(a, b *User) bool {
 
 	// one of them is not a member
-	if !a.isMemberOf(h) || !b.isMemberOf(h)  {
+	if !a.isMemberOf(h) || !b.isMemberOf(h) {
 		return false
 	}
 
-	// member granting admin status is not themself an admin
+	// member granting admin status must be an owner
 	if !h.getHubMemberFromUser(a).IsOwner {
 		return false
 	}

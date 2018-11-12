@@ -4,12 +4,13 @@ import "github.com/gorilla/websocket"
 
 // User : a user
 type User struct {
-	ID             string
-	Username       string
-	password       string
-	Friends        []*UserTag
-	FriendRequests []*UserTag
-	Hubs           []*HubTag
+	ID              string
+	Username        string
+	password        string
+	Friends         []*UserTag
+	FriendRequests  []*UserTag
+	Hubs            []*HubTag
+	JoinInvitations []*HubInvitation
 
 	ws *websocket.Conn // notifications websocket
 
@@ -35,6 +36,12 @@ type Hub struct {
 	broadcast chan Message
 }
 
+// HubInvitation : an invitation to join a hub
+type HubInvitation struct {
+	Hub HubTag
+	From UserTag
+}
+
 // HubTag : hubs a user has joined
 type HubTag struct {
 	ID         string
@@ -43,8 +50,7 @@ type HubTag struct {
 
 // HubMember : joined users of a hub
 type HubMember struct {
-
-	Member  *User
+	Member *User
 
 	/* Admins
 	- can invite users (private and secret hubs only)
@@ -61,7 +67,6 @@ type HubMember struct {
 	- can delete the hub
 	*/
 	IsOwner bool
-
 }
 
 // Message : message struct
@@ -69,7 +74,6 @@ type Message struct {
 	// Sender UserTag
 	ID       string
 	Username string
-
 	Message string
 }
 

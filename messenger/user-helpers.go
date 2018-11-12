@@ -5,7 +5,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// User Tag helpers
+/* User Tag Helpers */
 func (ut *UserTag) getUserFromTag() *User {
 	for _, u := range users {
 		if ut.ID == u.ID {
@@ -15,27 +15,68 @@ func (ut *UserTag) getUserFromTag() *User {
 	return nil
 }
 
-// User helpers
+/* User Helpers */
 
+// TODO: convert all for loops into contains and remove
+
+
+// Hub join Invites
+func (u *User) acceptJoinInviteFrom(h *Hub) bool {
+	if !u.hasJoinInviteFrom(h) {
+		return false
+	}
+	// remove the request from user's invitations
+	u.removeJoinInviteFrom(h)
+	h.joinUser(u)
+	return true
+}
+
+func (u *User) declineJoinInviteFrom(h *Hub) bool {
+	if !u.hasJoinInviteFrom(h) {
+		return false
+	}
+	// remove the request from user's invitations
+	u.removeJoinInviteFrom(h)
+	return true
+}
+
+func (u *User) removeJoinInviteFrom(h *Hub) bool {
+	r := u.JoinInvitations
+	for i, invitation := range r {
+		if invitation.Hub.ID == h.ID {
+			*r[i] = *r[len(r)-1]
+			u.JoinInvitations = r[:len(r)-1]
+			return true
+		}
+	}
+	return false
+}
+
+func (u *User) hasJoinInviteFrom(h *Hub) bool {
+	for _, invite := range u.JoinInvitations {
+		if invite.Hub.ID == h.ID {
+			return true
+		}
+	}
+	return false
+}
+
+// Join Requests
 func (u *User) sendJoinRequest(h *Hub) bool {
-
 	// only if the hub is private
 	if h.Visibility != "private" {
 		return false
 	}
-
 	// and the user hasn't already requested
 	if h.hasJoinRequestFrom(u) {
 		return false
 	}
-
 	r := &UserTag{u.ID, u.Username}
-
 	h.JoinRequests = append(h.JoinRequests, r)
-
 	return true
 }
 
+// Create Users
 func createUser(username, password string) *User {
 	uid, _ := uuid.NewV4()
 	passwordHash, _ := bcrypt.GenerateFromPassword([]byte(password), 10)
@@ -46,12 +87,14 @@ func createUser(username, password string) *User {
 		[]*UserTag{},
 		[]*UserTag{},
 		[]*HubTag{},
+		[]*HubInvitation{},
 		nil,
 	}
 	addUser(u)
 	return u
 }
 
+// Friend Requests
 func (u *User) hasRequested(f *User) bool {
 	for _, friend := range f.FriendRequests {
 		if friend.ID == u.ID {
@@ -102,6 +145,7 @@ func (u *User) removeFriendRequest(f *User) bool {
 
 // TODO: deactivate user
 
+// Friends
 func (u *User) isFriendsWith(f *User) bool {
 	for _, friend := range u.Friends {
 		if friend.ID == f.ID {
@@ -130,6 +174,7 @@ func (u *User) removeFriend(f *UserTag) bool {
 	return false
 }
 
+// Hubs
 func (u *User) createHub(id, vis string) *Hub {
 	if getHub(id) != nil { // hub already exists, so don't create it
 		return nil

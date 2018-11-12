@@ -1,4 +1,5 @@
 package main
+
 // MEMBER helpers
 
 func (m *HubMember) setAdmin(a bool) {

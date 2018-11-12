@@ -43,8 +43,11 @@ func TestFriends(t *testing.T) {
 
 }
 
-
 func TestHubs(t *testing.T) {
+
+	u1 = createUser("testuser1", "secret-key")
+	u2 = createUser("testuser2", "secret-key")
+	u3 = createUser("testuser3", "secret-key")
 
 	pub := u1.createHub("public-hub", "public")
 	priv := u2.createHub("private-hub", "private")
@@ -95,6 +98,43 @@ func TestHubs(t *testing.T) {
 	// when declined user doesn't become a member
 	if !priv.declineJoinRequest(u2, u1) || u1.isMemberOf(priv) {
 		t.Error("Expected non members or non admins can't accept join requests")
+	}
+
+}
+
+func TestJoinInvites(t *testing.T) {
+
+	u1 = createUser("testuser1", "secret-key")
+	u2 = createUser("testuser2", "secret-key")
+	u3 = createUser("testuser3", "secret-key")
+
+	pub := u1.createHub("pub2-hub", "public")
+	// priv := u2.createHub("private-hub", "private")
+	// secr := u3.createHub("secret-hub", "secret")
+
+	// admin should be able to send invitations
+	if !pub.sendJoinInvitation(u1, u2) {
+		t.Error("Expected admin should be able to send invitations")
+	}
+
+	// u2 should be able to accept join invite
+	if !u2.acceptJoinInviteFrom(pub) {
+		t.Error("Expected u2 should be able to accept join invite")
+	}
+
+	// u2 should no longer has an invite from hub
+	if u2.hasJoinInviteFrom(pub) == true {
+		t.Error("Expected u2 should no longer has an invite from hub")
+	}
+
+	// u2 cannot accept this invite twice
+	if u2.acceptJoinInviteFrom(pub) == true {
+		t.Error("Expected u2 cannot accept this invite twice")
+	}
+
+	// u3 shouldn't be able to accept an invite he didn't receive
+	if u3.acceptJoinInviteFrom(pub) {
+		t.Error("Expected u3 shouldn't be able to accept an invite he didn't receive")
 	}
 
 }

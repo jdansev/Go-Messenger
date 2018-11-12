@@ -121,10 +121,14 @@ func FuzzyFindHubs(w http.ResponseWriter, r *http.Request) {
 		q := string(query)
 
 		if q == "*" {
-			matches = hubs
+			for _, h := range hubs {
+				if h.Visibility != "secret" {
+					matches = append(matches, h)
+				}
+			}
 		} else if q != "" {
 			for _, h := range hubs {
-				if fuzzy.Match(q, h.ID) {
+				if fuzzy.Match(q, h.ID) && h.Visibility != "secret" {
 					matches = append(matches, h)
 				}
 			}

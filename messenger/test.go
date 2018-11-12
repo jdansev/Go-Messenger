@@ -11,7 +11,6 @@ func addTestHubs() {
 
 	createTestUsers()
 
-
 	h2 := p1.createHub("p1-private-hub", "private")
 
 	p3.sendJoinRequest(h2)
