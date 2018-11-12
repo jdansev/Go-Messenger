@@ -46,17 +46,17 @@ type HubMember struct {
 
 	Member  *User
 
-	/* Admin
-	- invite users (private and secret hubs only)
-	- accept join requests (private hubs only)
-	- remove members
-	- change hub visibility
-	- change hub details
+	/* Admins
+	- can invite users (private and secret hubs only)
+	- can accept join requests (private hubs only)
+	- can remove members
+	- can change hub visibility
+	- can change hub details
 	*/
 	IsAdmin bool
 
-	/* Owner
-	- has admin privileges plus
+	/* Owners
+	- have admin privileges plus
 	- can assign other members as admin
 	- can delete the hub
 	*/

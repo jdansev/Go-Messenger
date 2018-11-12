@@ -51,8 +51,6 @@ func createTestUsers() {
 
 	p2.acceptFriendRequest(p3)
 
-
-
 }
 
 func (h *Hub) addTestUsersToHub() {

@@ -30,51 +30,54 @@ func (h *Hub) grantAdmin(a, b *User) bool {
 	return true
 }
 
-func (h *Hub) declineJoinRequest(m, r *User) {
+func (h *Hub) declineJoinRequest(m, r *User) bool {
 
 	if !h.hasJoinRequestFrom(r) {
-		return // didn't request to join
+		return false // didn't request to join
 	}
 
 	if !m.isMemberOf(h) || r.isMemberOf(h) {
-		return // user to accept is not a member or requeter is already a member
+		return false // user to accept is not a member or requeter is already a member
 	}
 
 	var hm *HubMember
 
 	if hm = h.getHubMemberFromUser(m); hm == nil {
-		return // hub member doesn't exist
+		return false // hub member doesn't exist
 	}
 
 	if !hm.IsAdmin { // not an admin
-		return
+		return false
 	}
 
 	h.removeJoinRequest(r)
+	return true
 }
 
-func (h *Hub) acceptJoinRequest(m, r *User) { // member to accept the requesting user
+func (h *Hub) acceptJoinRequest(m, r *User) bool { // member to accept the requesting user
 
 	if !h.hasJoinRequestFrom(r) {
-		return // didn't request to join
+		return false // didn't request to join
 	}
 
 	if !m.isMemberOf(h) {
-		return // user to accept is not a member
+		return false // user to accept is not a member
 	}
 
 	var hm *HubMember
 
 	if hm = h.getHubMemberFromUser(m); hm == nil {
-		return // hub member doesn't exist
+		return false // hub member doesn't exist
 	}
 
 	if !hm.IsAdmin { // not an admin
-		return
+		return false
 	}
 
 	h.joinUser(r)
 	h.removeJoinRequest(r)
+
+	return true
 }
 
 func (h *Hub) removeJoinRequest(u *User) bool {
