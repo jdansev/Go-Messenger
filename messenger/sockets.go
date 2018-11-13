@@ -232,10 +232,6 @@ func Notifications(w http.ResponseWriter, r *http.Request) {
 func (n *Notification) Notify() bool {
 	var err error
 
-	// notification := map[string]string{
-	// 	"Type": n.Type,
-	// }
-
 	if n.recipient.ws == nil {
 		// user has no notifications socket
 		return false

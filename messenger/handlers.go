@@ -361,3 +361,38 @@ func GetMyFriendRequests(w http.ResponseWriter, r *http.Request) {
 	// 3. Return user friend requests
 	json.NewEncoder(w).Encode(u.FriendRequests)
 }
+
+// GetHubMessages : returns hub message history
+func GetHubMessages(w http.ResponseWriter, r *http.Request) {
+
+	var tok string
+	var ok bool
+	var u *User
+	var h *Hub
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// 1. Validate token from url
+	if tok, ok = validateURLToken(w, r); !ok {
+		return
+	}
+
+	// 2. Get the user's profile
+	if u, ok = validateUserFromToken(tok, w); !ok {
+		return
+	}
+
+	// 3. Validate hub id from path
+	if h, ok = validateHubIDFromPath(w, r); !ok {
+		return
+	}
+
+	// Check that user is a member of this hub
+	if !u.isMemberOf(h) {
+		return
+	}
+
+	// 4. Return user friend requests
+	json.NewEncoder(w).Encode(h.Messages)
+
+}
