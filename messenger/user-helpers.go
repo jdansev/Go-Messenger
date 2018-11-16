@@ -175,11 +175,11 @@ func (u *User) removeFriend(f *UserTag) bool {
 }
 
 // Hubs
-func (u *User) createHub(id, vis string) *Hub {
+func (u *User) createHub(id, vis string, spec Spectrum) *Hub {
 	if getHub(id) != nil { // hub already exists, so don't create it
 		return nil
 	}
-	h := createHub(id, vis)
+	h := createHub(id, vis, spec)
 	addHub(h)
 	h.joinUser(u)
 	h.setAdmin(u, true)
@@ -188,7 +188,7 @@ func (u *User) createHub(id, vis string) *Hub {
 }
 
 func (u *User) joinHub(h *Hub) {
-	u.Hubs = append(u.Hubs, &HubTag{h.ID, h.Visibility})
+	u.Hubs = append(u.Hubs, &HubTag{h.ID, h.Visibility, h.Spectrum})
 }
 
 func (u *User) leaveHub(h *Hub) bool {

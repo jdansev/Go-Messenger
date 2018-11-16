@@ -11,7 +11,12 @@ func addTestHubs() {
 
 	createTestUsers()
 
-	h2 := p1.createHub("p1-private-hub", "private")
+	spec := Spectrum {
+		"#38ef7d",
+		"#11998e",
+	}
+
+	h2 := p1.createHub("p1-private-hub", "private", spec)
 
 	p3.sendJoinRequest(h2)
 

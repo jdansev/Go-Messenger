@@ -122,7 +122,10 @@
             <input id="create-hub-id" name="hub_id" type="text" value="" placeholder="Hub Name"/> <button type="submit">Create</button><br>
             <input type="radio" name="hub-visibility" value="public" checked><label>public</label>
             <input type="radio" name="hub-visibility" value="private"><label>private</label>
-            <input type="radio" name="hub-visibility" value="secret"><label>secret</label>
+            <input type="radio" name="hub-visibility" value="secret"><label>secret</label> <br>
+
+            <input name="hub-spec-start" type="text" value="" placeholder="Start Color"/><br>
+            <input name="hub-spec-end" type="text" value="" placeholder="End Color"/><br>
         </form>
     </div>
 
@@ -329,6 +332,8 @@
         // form handlers
         $("#create-hub").submit(function(e) {
             var visibility = $('input[name=hub-visibility]:checked').val();
+            var hubSpecStart = $('input[name=hub-spec-start]').val();
+            var hubSpecEnd = $('input[name=hub-spec-end]').val();
             var form = $(this);
             var url = form.attr('action') + "?token=" + token;
             e.stopPropagation();
@@ -338,7 +343,9 @@
                 url: url,
                 data: {
                     hub_id: $('#create-hub-id').val(),
-                    hub_visibility: visibility
+                    hub_visibility: visibility,
+                    hub_spec_start: hubSpecStart,
+                    hub_spec_end: hubSpecEnd,
                 },
                 success: function(data, textStatus, xhr) {
                     if (xhr.status != 200) {
@@ -589,7 +596,7 @@
                 hubSearchWS.send($("#find-hubs").val());
             });
 
-        })
+        });
 
         $("#find-users").keydown(function(e) {
 

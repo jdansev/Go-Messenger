@@ -179,9 +179,18 @@ func CreateHub(w http.ResponseWriter, r *http.Request) {
 
 	vis := r.FormValue("hub_visibility")
 
+	specStart := r.FormValue("hub_spec_start")
+	specEnd := r.FormValue("hub_spec_end")
+
+	spec := Spectrum{
+		specStart,
+		specEnd,
+	}
+
+
 	// 3. Create the new hub
 	hid := r.FormValue("hub_id")
-	h := u.createHub(hid, vis)
+	h := u.createHub(hid, vis, spec)
 	if h == nil {
 		http.Error(w, "400 - hub already exists!", http.StatusBadRequest)
 		return

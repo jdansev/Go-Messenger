@@ -42,7 +42,7 @@ func (h *Hub) sendJoinInvitation(a, b *User) bool {
 
 	b.JoinInvitations = append(b.JoinInvitations, 
 		&HubInvitation{
-			HubTag{h.ID, h.Visibility},
+			HubTag{h.ID, h.Visibility, h.Spectrum},
 			UserTag{a.ID, a.Username},
 		},
 	)
@@ -157,13 +157,15 @@ func removeHub(h *Hub) bool {
 	return false
 }
 
-func createHub(id, vis string) *Hub {
+func createHub(id, vis string, spec Spectrum) *Hub {
 	h := &Hub{
 		ID:           id,
 		Visibility:   vis,
 		Members:      []*HubMember{},
 		Messages:     []*Message{},
 		JoinRequests: []*UserTag{},
+
+		Spectrum: spec,
 
 		broadcast: make(chan Message),
 		clients:   make(map[*websocket.Conn]bool),

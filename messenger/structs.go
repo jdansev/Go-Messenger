@@ -24,6 +24,12 @@ type UserTag struct {
 	Username string
 }
 
+// Spectrum : a hub's designated color gradient
+type Spectrum struct {
+	Start string
+	End   string
+}
+
 // Hub : collection of users
 type Hub struct {
 	ID           string
@@ -31,6 +37,8 @@ type Hub struct {
 	Members      []*HubMember
 	Messages     []*Message
 	JoinRequests []*UserTag
+
+	Spectrum Spectrum
 
 	clients   map[*websocket.Conn]bool
 	broadcast chan Message
@@ -46,6 +54,7 @@ type HubInvitation struct {
 type HubTag struct {
 	ID         string
 	Visibility string
+	Spectrum   Spectrum
 }
 
 // HubMember : joined users of a hub

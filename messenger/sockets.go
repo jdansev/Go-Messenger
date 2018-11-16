@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/lithammer/fuzzysearch/fuzzy"
 )
@@ -128,7 +129,7 @@ func FuzzyFindHubs(w http.ResponseWriter, r *http.Request) {
 			}
 		} else if q != "" {
 			for _, h := range hubs {
-				if fuzzy.Match(q, h.ID) && h.Visibility != "secret" {
+				if fuzzy.Match(strings.ToLower(q), strings.ToLower(h.ID)) && h.Visibility != "secret" {
 					matches = append(matches, h)
 				}
 			}
@@ -169,7 +170,7 @@ func FuzzyFindUsers(w http.ResponseWriter, r *http.Request) {
 			matches = users
 		} else if q != "" {
 			for _, u := range users {
-				if fuzzy.Match(q, u.Username) {
+				if fuzzy.Match(strings.ToLower(q), strings.ToLower(u.Username)) {
 					matches = append(matches, u)
 				}
 			}
