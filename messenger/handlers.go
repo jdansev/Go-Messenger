@@ -154,12 +154,9 @@ func GetMyHubs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
 	hp := []HubPreview{}
 
 	for _, h := range u.Hubs {
-
-		fmt.Println(len(h.getHubFromTag().Messages))
 
 		var m Message
 
@@ -172,12 +169,10 @@ func GetMyHubs(w http.ResponseWriter, r *http.Request) {
 			h,
 			m,
 		})
-		
+
 	}
 
 	// 3. Return user hubs
-	// json.NewEncoder(w).Encode(u.Hubs)
-
 	json.NewEncoder(w).Encode(hp)
 }
 
@@ -209,7 +204,6 @@ func CreateHub(w http.ResponseWriter, r *http.Request) {
 		specStart,
 		specEnd,
 	}
-
 
 	// 3. Create the new hub
 	hid := r.FormValue("hub_id")
