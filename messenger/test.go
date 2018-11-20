@@ -30,6 +30,15 @@ func addTestHubs() {
 
 	h2.unjoinUser(p1)
 
+	u1 := createUser("asdf", "asdf")
+	u2 := createUser("qwer", "qwer")
+	u3 := createUser("zxcv", "zxcv")
+	
+	u1.sendFriendRequestTo(u2)
+	u1.sendFriendRequestTo(u3)
+	u2.acceptFriendRequest(u1)
+	u3.acceptFriendRequest(u1)
+
 }
 
 var p1 *User

@@ -44,6 +44,12 @@ type Hub struct {
 	broadcast chan Message
 }
 
+// HubPreview : preview of a hub
+type HubPreview struct {
+	Tag         *HubTag
+	LastMessage Message
+}
+
 // HubInvitation : an invitation to join a hub
 type HubInvitation struct {
 	Hub  HubTag

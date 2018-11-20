@@ -39,6 +39,7 @@ func main() {
 	router.HandleFunc("/my-friends", GetMyFriends).Methods("GET")
 	router.HandleFunc("/my-friend-requests", GetMyFriendRequests).Methods("GET")
 	router.HandleFunc("/hub-messages/{hub_id}", GetHubMessages).Methods("GET")
+	router.HandleFunc("/hub-info/{hub_id}", GetHubInfo).Methods("GET")
 
 	// authentication
 	router.HandleFunc("/register", Register).Methods("POST")

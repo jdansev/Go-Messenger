@@ -154,8 +154,31 @@ func GetMyHubs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+
+	hp := []HubPreview{}
+
+	for _, h := range u.Hubs {
+
+		fmt.Println(len(h.getHubFromTag().Messages))
+
+		var m Message
+
+		if len(h.getHubFromTag().Messages) > 0 {
+			messages := h.getHubFromTag().Messages
+			m = *(messages[len(messages)-1])
+		}
+
+		hp = append(hp, HubPreview{
+			h,
+			m,
+		})
+		
+	}
+
 	// 3. Return user hubs
-	json.NewEncoder(w).Encode(u.Hubs)
+	// json.NewEncoder(w).Encode(u.Hubs)
+
+	json.NewEncoder(w).Encode(hp)
 }
 
 // CreateHub : allow users to start a new hub
@@ -401,7 +424,42 @@ func GetHubMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 4. Return user friend requests
+	// 4. Return hub messages
 	json.NewEncoder(w).Encode(h.Messages)
+
+}
+
+// GetHubInfo : returns hub information
+func GetHubInfo(w http.ResponseWriter, r *http.Request) {
+
+	var tok string
+	var ok bool
+	var u *User
+	var h *Hub
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// 1. Validate token from url
+	if tok, ok = validateURLToken(w, r); !ok {
+		return
+	}
+
+	// 2. Get the user's profile
+	if u, ok = validateUserFromToken(tok, w); !ok {
+		return
+	}
+
+	// 3. Validate hub id from path
+	if h, ok = validateHubIDFromPath(w, r); !ok {
+		return
+	}
+
+	// Check that user is a member of this hub
+	if !u.isMemberOf(h) {
+		return
+	}
+
+	// 4. Return hub information
+	json.NewEncoder(w).Encode(h)
 
 }
