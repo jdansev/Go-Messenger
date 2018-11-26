@@ -50,7 +50,8 @@ func main() {
 	router.HandleFunc("/ws/find-users", FuzzyFindUsers)
 
 	// notifications socket
-	router.HandleFunc("/ws/notifications", Notifications)
+	// router.HandleFunc("/ws/notifications", Notifications)
+	router.HandleFunc("/ws/notificationHandler", NotificationHandler)
 
 	// chat socket
 	router.HandleFunc("/ws", ConnectionHandler)

@@ -33,3 +33,13 @@ func findUserByName(usr string) *User {
 	}
 	return nil
 }
+
+
+func findHubByID(hid string) *Hub {
+	for _, h := range hubs {
+		if h.ID == hid {
+			return h
+		}
+	}
+	return nil
+}

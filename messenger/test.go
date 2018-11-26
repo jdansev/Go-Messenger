@@ -11,7 +11,7 @@ func addTestHubs() {
 
 	createTestUsers()
 
-	spec := Spectrum {
+	spec := Spectrum{
 		"#38ef7d",
 		"#11998e",
 	}
@@ -30,14 +30,14 @@ func addTestHubs() {
 
 	h2.unjoinUser(p1)
 
-	u1 := createUser("asdf", "asdf")
-	u2 := createUser("qwer", "qwer")
-	u3 := createUser("zxcv", "zxcv")
-	
-	u1.sendFriendRequestTo(u2)
-	u1.sendFriendRequestTo(u3)
-	u2.acceptFriendRequest(u1)
-	u3.acceptFriendRequest(u1)
+	// u1 := createUser("asdf", "asdf")
+	// u2 := createUser("qwer", "qwer")
+	// u3 := createUser("zxcv", "zxcv")
+
+	// u1.sendFriendRequestTo(u2)
+	// u1.sendFriendRequestTo(u3)
+	// u2.acceptFriendRequest(u1)
+	// u3.acceptFriendRequest(u1)
 
 }
 
@@ -52,17 +52,17 @@ func createTestUsers() {
 
 	// add friends
 	p1.sendFriendRequestTo(p3)
-	p3.acceptFriendRequest(p1)
+	p3.acceptFriendRequestFrom(p1)
 
 	p2.sendFriendRequestTo(p1)
-	p1.declineFriendRequest(p2)
+	p1.declineFriendRequestFrom(p2)
 
 	p1.sendFriendRequestTo(p2)
 
 	p3.sendFriendRequestTo(p1)
 	p1.sendFriendRequestTo(p2)
 
-	p2.acceptFriendRequest(p3)
+	p2.acceptFriendRequestFrom(p3)
 
 }
 

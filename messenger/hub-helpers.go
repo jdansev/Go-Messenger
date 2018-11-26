@@ -2,6 +2,7 @@ package main
 
 import "github.com/gorilla/websocket"
 
+/* USER Hub helpers */
 
 /* HUB Tag helpers */
 
@@ -14,6 +15,9 @@ func (ht *HubTag) getHubFromTag() *Hub {
 	return nil
 }
 
+func (h *Hub) getTagFromHub() HubTag {
+	return HubTag{h.ID, h.Visibility, h.Spectrum}
+}
 
 /* HUB helpers */
 
@@ -40,7 +44,7 @@ func (h *Hub) sendJoinInvitation(a, b *User) bool {
 		return false
 	}
 
-	b.JoinInvitations = append(b.JoinInvitations, 
+	b.JoinInvitations = append(b.JoinInvitations,
 		&HubInvitation{
 			HubTag{h.ID, h.Visibility, h.Spectrum},
 			UserTag{a.ID, a.Username},
@@ -235,6 +239,6 @@ func (h *Hub) removeUserFromHub(p *User) bool {
 	return false
 }
 
-func (h *Hub) recordMessage(m *Message) {
+func (h *Hub) saveMessage(m *Message) {
 	h.Messages = append(h.Messages, m)
 }

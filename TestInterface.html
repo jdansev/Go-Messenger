@@ -158,7 +158,7 @@
         var ws = null;
         var hubSearchWS = null;
         var userSearchWS = null
-        var notificationWS = null;
+        var mainWS = null;
 
         function resetUserDetails() {
             token = null;
@@ -178,8 +178,8 @@
                 userSearchWS.close();
             }
 
-            if (notificationWS != null && notificationWS.readyState !== notificationWS.CLOSED) {
-                notificationWS.close();
+            if (mainWS != null && mainWS.readyState !== mainWS.CLOSED) {
+                mainWS.close();
             }
 
             // clear all input fields
@@ -245,7 +245,8 @@
                         loadYourFriends();
                         loadFriendRequests();
 
-                        connectNotificationWebSocket();
+
+                        connectMainSocket();
 
                     }
                 },
@@ -309,7 +310,6 @@
                                     loadYourFriends();
                                     loadFriendRequests();
 
-                                    connectNotificationWebSocket(); 
                                 }
                             },
                             error: function(data, textStatus, xhr) {
@@ -421,11 +421,14 @@
                         $("#token").empty();
                         $("#token").append(token);
 
+                        
+
                         loadYourHubs();
                         loadYourFriends();
                         loadFriendRequests();
 
-                        connectNotificationWebSocket();
+                        connectMainSocket();
+
                     }
                 },
                 error: function(data, textStatus, xhr) {
@@ -437,7 +440,9 @@
 
         function joinHub(hub_id) {
 
-            if (ws != null) ws.close();
+            if (ws != null && ws.readyState !== ws.CLOSED) {
+                ws.close();
+            }
 
             ws = new WebSocket("ws://localhost:1212/ws?token="+token+"&hub="+hub_id);
             waitForSocketConnection(ws, function() {
@@ -457,6 +462,43 @@
 
             });
 
+        }
+        
+
+
+        // Main Websocket
+
+        function connectMainSocket() {
+            mainWS = new WebSocket("ws://localhost:1212/ws/notificationHandler?token="+token);
+
+            waitForSocketConnection(mainWS, function() {
+
+                console.log("Connected to main websocket.");
+
+                mainWS.onmessage = function (evt) {
+
+                    var messages = evt.data.split('\n');
+                    var msg = JSON.parse(messages[0]);
+                    console.log(msg);
+
+                    switch(msg.Type) {
+                        case "friendRequestReceived":
+                            loadFriendRequests();
+                            break;
+                        case "youAcceptedFriendRequest":
+                            loadYourFriends();
+                            loadFriendRequests();
+                            break;
+                        case "requestAccepted":
+                            loadYourFriends();
+                        case "youDeclinedFriendRequest":
+                            loadFriendRequests();
+                        default:
+                    }
+
+                };
+
+            });
         }
 
         function connectUserSearchWebsocket() {
@@ -546,41 +588,6 @@
                 };
             });
 
-        }
-
-        function connectNotificationWebSocket() {
-            notificationWS = new WebSocket("ws://localhost:1212/ws/notifications?token="+token);
-
-            waitForSocketConnection(notificationWS, function() {
-
-                console.log("Connected to notifications websocket.");
-
-                notificationWS.onmessage = function (evt) {
-
-                    var messages = evt.data.split('\n');
-                    var msg = JSON.parse(messages[0]);
-                    console.log(msg);
-
-
-
-                    switch(msg.Type) {
-                        case "friendRequestReceived":
-                            loadFriendRequests();
-                            break;
-                        case "youAcceptedFriendRequest":
-                            loadYourFriends();
-                            loadFriendRequests();
-                            break;
-                        case "requestAccepted":
-                            loadYourFriends();
-                        case "youDeclinedFriendRequest":
-                            loadFriendRequests();
-                        default:
-                    }
-
-                };
-
-            });
         }
 
 
@@ -716,8 +723,8 @@
                                 class: 'hub',
                             });
                             
-                            hub.append(data[d].ID + " (" + data[d].Visibility + ")");
-                            hub.data("id", data[d].ID);
+                            hub.append(data[d].Tag.ID + " (" + data[d].Tag.Visibility + ")");
+                            hub.data("id", data[d].Tag.ID);
                             hub.appendTo('#your-hubs');
 
                             var joinBtn = $('<button/>', {
@@ -725,7 +732,7 @@
                             });
                             joinBtn.append("join");
                             joinBtn.on('click', function() { // only works when passed through a function for some reason
-                                joinHub(data[d].ID);
+                                joinHub(data[d].Tag.ID);
                             });
                             joinBtn.appendTo(hub);
 

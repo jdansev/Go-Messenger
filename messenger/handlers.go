@@ -156,17 +156,18 @@ func GetMyHubs(w http.ResponseWriter, r *http.Request) {
 
 	hp := []HubPreview{}
 
-	for _, h := range u.Hubs {
+	for _, userHub := range u.Hubs {
 
 		var m Message
 
-		if len(h.getHubFromTag().Messages) > 0 {
-			messages := h.getHubFromTag().Messages
+		if len(userHub.Tag.getHubFromTag().Messages) > 0 {
+			messages := userHub.Tag.getHubFromTag().Messages
 			m = *(messages[len(messages)-1])
 		}
 
 		hp = append(hp, HubPreview{
-			h,
+			userHub.Tag,
+			userHub.ReadLatest,
 			m,
 		})
 
@@ -252,18 +253,15 @@ func SendFriendRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 5. Send the notification
-	n := &Notification{
-		fu,
-		"friendRequestReceived",
-		UserTag{u.ID, u.Username},
-	}
-
-	ok = n.Notify()
+	fr := constructFriendRequest(u, fu)
+	n := constructNotification("friendRequestReceived", fr)
+	ok = fu.notify(n)
 	if !ok {
-		u.ws.WriteJSON([]string{
+		u.main.WriteJSON([]string{
 			"request sent, recipient is offline!",
 		})
 	}
+
 }
 
 // AcceptFriendRequest : accepts friend request from user with id
@@ -291,37 +289,25 @@ func AcceptFriendRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 4. Accept the request
-	if ok = u.acceptFriendRequest(fu); !ok {
+	if ok = u.acceptFriendRequestFrom(fu); !ok {
 		http.Error(w, "400 - cannot accept request from this user!", http.StatusBadRequest)
 		return
 	}
 
 	// 5. Notify the accepting user
-	n1 := &Notification{
-		u,
-		"youAcceptedFriendRequest",
-		UserTag{fu.ID, fu.Username},
-	}
-	ok = n1.Notify()
+	fr1 := constructFriendRequest(fu, u)
+	n1 := constructNotification("youAcceptedFriendRequest", fr1)
+	ok = u.notify(n1)
 	if !ok {
-		u.ws.WriteJSON([]string{
+		u.main.WriteJSON([]string{
 			"user is not connected!",
 		})
 	}
 
 	// 6. Notify the requesting user
-	n2 := &Notification{
-		fu,
-		"requestAccepted",
-		UserTag{u.ID, u.Username},
-	}
-	fmt.Println(n2)
-	ok = n2.Notify()
-	if !ok {
-		u.ws.WriteJSON([]string{
-			"request accepted, recipient is offline!",
-		})
-	}
+	fr2 := constructFriendRequest(fu, u)
+	n2 := constructNotification("requestAccepted", fr2)
+	fu.notify(n2)
 
 }
 
@@ -350,18 +336,20 @@ func DeclineFriendRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 4. Decline the request
-	if ok = u.declineFriendRequest(fu); !ok {
+	if ok = u.declineFriendRequestFrom(fu); !ok {
 		http.Error(w, "400 - cannot decline request from this user!", http.StatusBadRequest)
 		return
 	}
 
-	// 6. Notify the declining user
-	n := &Notification{
-		u,
-		"youDeclinedFriendRequest",
-		UserTag{fu.ID, fu.Username},
+	// 5. Notify the declining user
+	fr := constructFriendRequest(fu, u)
+	n := constructNotification("youDeclinedFriendRequest", fr)
+	ok = u.notify(n)
+	if !ok {
+		u.main.WriteJSON([]string{
+			"user is not connected!",
+		})
 	}
-	n.Notify()
 
 }
 
@@ -416,6 +404,13 @@ func GetHubMessages(w http.ResponseWriter, r *http.Request) {
 	// Check that user is a member of this hub
 	if !u.isMemberOf(h) {
 		return
+	}
+
+	// set the read latest to true
+	for _, userHubs := range u.Hubs {
+		if userHubs.Tag.ID == h.ID {
+			userHubs.ReadLatest = true
+		}
 	}
 
 	// 4. Return hub messages

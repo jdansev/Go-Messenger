@@ -1,6 +1,10 @@
 package main
 
-import "github.com/gorilla/websocket"
+import (
+	"encoding/json"
+
+	"github.com/gorilla/websocket"
+)
 
 // User : a user
 type User struct {
@@ -9,13 +13,21 @@ type User struct {
 	password        string
 	Friends         []*UserTag
 	FriendRequests  []*UserTag
-	Hubs            []*HubTag
+	Hubs            []*UserHub
 	JoinInvitations []*HubInvitation
 
 	ws *websocket.Conn // notifications websocket
 
+	main *websocket.Conn // main websocket
+
 	// attach UserTag to user? (not exported)
 	// usertags should not be stored in memory?
+}
+
+// UserHub is a user's hubs
+type UserHub struct {
+	Tag        HubTag
+	ReadLatest bool
 }
 
 // UserTag : ID in friend list
@@ -46,7 +58,8 @@ type Hub struct {
 
 // HubPreview : preview of a hub
 type HubPreview struct {
-	Tag         *HubTag
+	Tag         HubTag
+	ReadLatest  bool
 	LastMessage Message
 }
 
@@ -92,10 +105,44 @@ type Message struct {
 	Message  string
 }
 
-// Notification : holds notification data
+/* Notification Structs */
+
+// Notification : sending notification
 type Notification struct {
-	// Sender *UserTag
-	recipient *User
-	Type      string
-	Body      interface{}
+	Type string
+	Body interface{}
+}
+
+// N is receiving notification
+type N struct {
+	Type string // message, notification, friend request, invitation, etc.
+
+	Body json.RawMessage
+}
+
+// HubMessage is a hub message
+type HubMessage struct {
+	Hub     HubTag
+	Sender  UserTag
+	Message string
+}
+
+// UserMessage is a user message
+type UserMessage struct {
+	Sender    UserTag
+	Recipient UserTag
+	Message   string
+}
+
+// FriendRequest is a friend request
+type FriendRequest struct {
+	From UserTag
+	To   UserTag
+}
+
+// JoinInvitation is a join invitation
+type JoinInvitation struct {
+	HubID string
+	From  UserTag
+	To    UserTag
 }
