@@ -13,7 +13,9 @@ func main() {
 
 	router := mux.NewRouter()
 
-	addTestHubs()
+	// addTestHubs()
+
+	seedDatabase()
 
 	// test APIs
 	router.HandleFunc("/nuke", NukeServer).Methods("GET")

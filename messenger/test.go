@@ -6,6 +6,54 @@ import (
 	"time"
 )
 
+var u1 *User
+var u2 *User
+var u3 *User
+
+func seedDatabase() {
+	u1 = createUser("Derek Smith", "derek")
+	u2 = createUser("Lisa Ingham", "lisa")
+	u3 = createUser("Fred Mercury", "fred")
+
+	h1 := u1.createHub("Gang of One", "private", Spectrum{
+		// "#38ef7d",
+		// "#11998e",
+
+		"#ff6a00",
+		"#ee0979",
+	})
+
+	u1.sendFriendRequestTo(u2)
+	u2.acceptFriendRequestFrom(u1)
+	u2.sendFriendRequestTo(u3)
+	u3.acceptFriendRequestFrom(u2)
+	u3.sendFriendRequestTo(u1)
+	u1.acceptFriendRequestFrom(u3)
+
+	u2.sendJoinRequest(h1)
+	u3.sendJoinRequest(h1)
+	h1.acceptJoinRequest(u2, u1)
+	h1.grantAdmin(u1, u2)
+	h1.acceptJoinRequest(u3, u2)
+
+	h1.saveMessage(&Message{"3", "Fred Mercury", "hey there"})
+	h1.saveMessage(&Message{"3", "Fred Mercury", "how's it going everyone?"})
+	h1.saveMessage(&Message{"3", "Fred Mercury", "nice to meet you all"})
+
+	h1.saveMessage(&Message{"2", "Lisa Ingham", "You too!"})
+	h1.saveMessage(&Message{"2", "Lisa Ingham", "The pleasure is mine"})
+
+	h1.saveMessage(&Message{"3", "Fred Mercury", "What's up you guys?"})
+	h1.saveMessage(&Message{"3", "Fred Mercury", "Love the new style"})
+	
+	h1.saveMessage(&Message{"2", "Lisa Ingham", "You really outdid yourself this time huh"})
+
+	h1.saveMessage(&Message{"3", "Fred Mercury", "Sure did looks like it"})
+	h1.saveMessage(&Message{"3", "Fred Mercury", "What an ass."})
+
+	h1.saveMessage(&Message{"2", "Lisa Ingham", "Seconded."})
+}
+
 // TEST helpers
 func addTestHubs() {
 
